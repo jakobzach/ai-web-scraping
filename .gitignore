@@ -11,4 +11,4 @@ data/output/*
 logs/*.log
 
 # OS files
-.DS_Store 
+.DS_Store
