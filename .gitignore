@@ -1,0 +1,14 @@
+# Environment variables (contains API keys)
+.env
+
+# Dependencies
+node_modules/
+
+# Scraped data output
+data/output/*
+
+# Logs
+logs/*.log
+
+# OS files
+.DS_Store 
