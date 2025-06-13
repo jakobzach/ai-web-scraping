@@ -1,0 +1,94 @@
+---
+description: guide on how to use stagehand for web automation
+globs: 
+alwaysApply: false
+---
+# Stagehand Project Guide
+
+This guide explains how to use Stagehand, a Playwright extension that adds `act`, `extract`, and `observe` capabilities to web automation.
+
+## Core Concepts
+
+### Stagehand Class
+- Main entry point for the project
+- Provides configuration, page, and context objects
+- Initialize using:
+```typescript
+import { Stagehand } from "@browserbasehq/stagehand";
+import StagehandConfig from "./stagehand.config";
+
+const stagehand = new Stagehand(StagehandConfig);
+await stagehand.init();
+```
+
+### Key Methods
+
+#### Act
+Use `act` for taking actions on the page:
+```typescript
+await page.act("Click the sign in button");
+```
+
+#### Observe
+Use `observe` to plan actions before executing them:
+```typescript
+const [action] = await page.observe("Click the sign in button");
+await page.act(action);
+```
+
+#### Extract
+Use `extract` to get data from the page:
+```typescript
+const data = await page.extract({
+  instruction: "extract the sign in button text",
+  schema: z.object({
+    text: z.string(),
+  }),
+});
+```
+
+### Best Practices
+
+1. **Action Caching**
+   - Always cache `observe` results before using them with `act`
+   - This prevents unexpected DOM changes
+   - Example:
+   ```typescript
+   const instruction = "Click the sign in button";
+   const cachedAction = await getCache(instruction);
+   
+   if (cachedAction) {
+     await page.act(cachedAction);
+   } else {
+     const results = await page.observe(instruction);
+     await setCache(instruction, results);
+     await page.act(results[0]);
+   }
+   ```
+
+2. **Action Granularity**
+   - Keep actions atomic and specific
+   - Good: "Click the sign in button"
+   - Bad: "Order me pizza"
+
+3. **Data Extraction**
+   - Use `schema` parameter to define expected data structure
+   - For arrays, wrap in a single object
+   - Use `useTextExtract: true` for large-scale extractions
+
+### Agent Usage
+
+For autonomous task execution:
+```typescript
+const agent = stagehand.agent({
+  provider: "openai",
+  model: "computer-use-preview",
+  instructions: `You are a helpful assistant that can use a web browser.
+  Do not ask follow up questions, the user will trust your judgement.`,
+  options: {
+    apiKey: process.env.OPENAI_API_KEY,
+  },
+});
+
+await agent.execute("Apply for a library card at the San Francisco Public Library");
+```
