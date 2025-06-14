@@ -72,13 +72,34 @@ This document breaks down the MVP implementation into manageable work packages w
 - [x] Add user agent rotation and stealth settings
 
 ### 2.2 Career Page Detection
-- [ ] Create `CareerPageFinder` utility using Stagehand's `act()` and `observe()`
-- [ ] Implement intelligent career page detection:
+- [x] Create `CareerPageFinder` class with intelligent discovery methods:
   ```typescript
-  await page.act("find the careers or jobs link on this page");
+  class CareerPageFinder {
+    async findCareerPage(companyUrl: string): Promise<CareerPageResult>
+    async detectCareerLinks(): Promise<CareerLink[]>
+    async validateCareerPage(url: string): Promise<boolean>
+  }
   ```
-- [ ] Handle common patterns: `/careers`, `/jobs`, `/work-with-us`, etc.
-- [ ] Add fallback strategies for non-standard structures
+- [ ] Implement multi-strategy career page detection:
+  - **Primary Strategy**: Use Stagehand's `act()` for natural language navigation
+    ```typescript
+    await page.act("click on the careers link");
+    await page.act("find the jobs or hiring section");
+    ```
+  - **Pattern Strategy**: Check common URL patterns (`/careers`, `/jobs`, `/work-with-us`, `/opportunities`, `/join-us`, `/team`)
+  - **Text Search Strategy**: Use `observe()` to find links containing career-related keywords
+    ```typescript
+    const careerLinks = await page.observe("find all links that mention careers, jobs, hiring, or work with us");
+    ```
+- [ ] Add intelligent fallback strategies:
+  - Footer link scanning for career sections
+  - Navigation menu analysis using `extract()`
+  - Site search functionality if available
+  - Contact page analysis for hiring information
+- [ ] Implement career page validation:
+  - Check for job listing indicators (job titles, application buttons)
+  - Validate page contains hiring-related content
+  - Detect ATS integrations (Greenhouse, Lever, BambooHR)
 
 ### 2.3 Job Listing Extraction
 - [ ] Implement `JobExtractor` using Stagehand's `extract()` method

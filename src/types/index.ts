@@ -141,4 +141,36 @@ export interface DataQualityMetrics {
   duplicateCount: number;
   validUrlCount: number;
   dataQualityScore: number; // 0-100
+}
+
+// Career page detection interfaces
+export interface CareerLink {
+  url: string;
+  text: string;
+  confidence: number; // 0-1 score of how likely this is a careers link
+  strategy: 'pattern' | 'text' | 'navigation' | 'footer' | 'fallback';
+}
+
+export interface CareerPageResult {
+  success: boolean;
+  careerPageUrl?: string;
+  detectionStrategy?: string;
+  confidence: number; // 0-1 score of how confident we are this is the right careers page
+  alternativeUrls?: string[]; // other potential career page URLs found
+  error?: string;
+  metadata: {
+    searchTimeMs: number;
+    strategiesAttempted: string[];
+    linksAnalyzed: number;
+  };
+}
+
+export enum CareerPageDetectionStrategy {
+  STAGEHAND_NAVIGATION = 'stagehand_navigation',
+  URL_PATTERN = 'url_pattern', 
+  TEXT_SEARCH = 'text_search',
+  FOOTER_SCAN = 'footer_scan',
+  NAVIGATION_MENU = 'navigation_menu',
+  SITE_SEARCH = 'site_search',
+  CONTACT_PAGE = 'contact_page'
 } 
