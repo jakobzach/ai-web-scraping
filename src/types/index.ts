@@ -185,4 +185,16 @@ export interface JobExtractionResult {
     extractionTimeMs: number;
     pageUrl: string;
   };
+}
+
+// Data processing interfaces
+export interface ProcessingResult {
+  processedJobs: JobListing[];
+  duplicatesRemoved: number;
+  invalidJobsRemoved: number;
+  metadata: {
+    originalCount: number;
+    finalCount: number;
+    processingTimeMs: number;
+  };
 } 

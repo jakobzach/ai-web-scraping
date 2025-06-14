@@ -1,4 +1,5 @@
 import { Page } from "@browserbasehq/stagehand";
+import { z } from "zod";
 import { CareerPageResult, CareerLink, CareerPageDetectionStrategy } from "../types/index.js";
 
 export class CareerPageFinder {
@@ -12,33 +13,44 @@ export class CareerPageFinder {
 
   /**
    * Main method to find the career page for a given company URL
-   * Orchestrates the detection strategies and returns the best result
+   * Uses pure Stagehand approach with multilingual support
    */
   async findCareerPage(companyUrl: string): Promise<CareerPageResult> {
     const startTime = Date.now();
-    const strategiesAttempted: string[] = [];
-    let linksAnalyzed = 0;
+    const strategiesAttempted: string[] = ['stagehand_multilingual'];
 
     try {
       // Navigate to the company's main page first
       await this.page.goto(companyUrl, { waitUntil: 'domcontentloaded' });
       
+      // Let Stagehand handle everything with multilingual commands
+      await this.page.act("navigate to the careers, jobs, karriere, stellenangebote, or hiring section");
+      
+      // Wait for potential navigation
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      // Validate current page
+      const validation = await this.validateCurrentPage();
+      
       const result: CareerPageResult = {
-        success: false,
-        confidence: 0,
+        success: validation.isCareerPage,
+        confidence: validation.confidence,
         metadata: {
-          searchTimeMs: 0,
+          searchTimeMs: Date.now() - startTime,
           strategiesAttempted,
           linksAnalyzed: 0
         }
       };
 
-      // TODO: Implement detection strategies in next checkpoint
-      // For now, return basic structure
-
-      result.metadata.searchTimeMs = Date.now() - startTime;
-      result.metadata.strategiesAttempted = strategiesAttempted;
-      result.metadata.linksAnalyzed = linksAnalyzed;
+      if (validation.isCareerPage) {
+        const currentUrl = this.page.url();
+        if (currentUrl) {
+          result.careerPageUrl = currentUrl;
+          result.detectionStrategy = CareerPageDetectionStrategy.STAGEHAND_NAVIGATION;
+        }
+      } else {
+        result.error = 'No career page found';
+      }
 
       return result;
 
@@ -46,77 +58,80 @@ export class CareerPageFinder {
       return {
         success: false,
         confidence: 0,
-        error: error instanceof Error ? error.message : 'Unknown error during career page detection',
+        error: error instanceof Error ? error.message : 'Error during career page navigation',
         metadata: {
           searchTimeMs: Date.now() - startTime,
           strategiesAttempted,
-          linksAnalyzed
+          linksAnalyzed: 0
         }
       };
     }
   }
 
   /**
-   * Detects potential career page links using various strategies
-   * Returns an array of potential career links with confidence scores
-   */
-  async detectCareerLinks(): Promise<CareerLink[]> {
-    const careerLinks: CareerLink[] = [];
+   * Check if a URL appears to be a career page (English + German patterns)
+     */
+  private isCareerUrl(url: string): boolean {
+    const careerPatterns = [
+      // English patterns
+      '/career', '/job', '/hiring', '/work-with-us', '/opportunities', '/join-us', '/employment', '/positions',
+      // German patterns
+      '/karriere', '/stellenangebote', '/jobs', '/arbeitsplätze', '/bewerbung', '/offene-stellen'
+    ];
     
-    // TODO: Implement detection logic in next checkpoint
-    // This will include:
-    // - Pattern matching for common career URLs
-    // - Text-based link detection using Stagehand observe()
-    // - Navigation menu analysis
-    
-    return careerLinks;
+    return careerPatterns.some(pattern => url.toLowerCase().includes(pattern));
   }
 
   /**
-   * Validates whether a given URL contains hiring-related content
-   * Returns true if the page appears to be a legitimate careers page
+   * Validates the current page to determine if it's a career page
+   * Returns validation result with confidence score
    */
-  async validateCareerPage(url: string): Promise<boolean> {
+  private async validateCurrentPage(): Promise<{ isCareerPage: boolean; confidence: number }> {
     try {
-      await this.page.goto(url, { waitUntil: 'domcontentloaded' });
+      const currentUrl = this.page.url();
       
-      // TODO: Implement validation logic in next checkpoint
-      // This will include:
-      // - Check for job listing indicators
-      // - Validate hiring-related content
-      // - Detect ATS integrations
+      // Check URL patterns (English + German)
+      const urlIndicatesCareer = currentUrl && this.isCareerUrl(currentUrl);
       
-      return false; // Placeholder
+      // Use Stagehand to check page content
+      const hasJobContent = await this.checkForJobContent();
+      
+      // Calculate confidence based on URL and content
+      let confidence = 0;
+      if (urlIndicatesCareer) confidence += 0.3;
+      if (hasJobContent) confidence += 0.7;
+      
+      return {
+        isCareerPage: confidence > 0.5,
+        confidence: Math.min(confidence, 1.0)
+      };
       
     } catch (error) {
-      console.error(`Error validating career page ${url}:`, error);
+      console.error('Error validating current page:', error);
+      return { isCareerPage: false, confidence: 0 };
+    }
+  }
+
+  /**
+   * Use Stagehand to check if the page contains job-related content
+   */
+  private async checkForJobContent(): Promise<boolean> {
+    try {
+      const result = await this.page.extract({
+        instruction: "check if this page contains job listings, career opportunities, stellenangebote, or hiring information",
+        schema: z.object({
+          hasJobContent: z.boolean(),
+          indicators: z.array(z.string()).optional()
+        })
+      });
+      
+      return result?.hasJobContent || false;
+      
+    } catch (error) {
+      console.error('Error checking job content:', error);
       return false;
     }
   }
 
-  /**
-   * Helper method to normalize and resolve URLs relative to the base domain
-   */
-  private resolveUrl(url: string): string {
-    try {
-      // If it's already a full URL, return as-is
-      if (url.startsWith('http://') || url.startsWith('https://')) {
-        return url;
-      }
-      
-      // If it's a relative URL, resolve it against the base URL
-      return new URL(url, this.baseUrl).href;
-    } catch {
-      return url; // Return original if URL parsing fails
-    }
-  }
 
-  /**
-   * Helper method to calculate confidence score based on URL and text patterns
-   */
-  private calculateConfidence(url: string, text: string, strategy: string): number {
-    // TODO: Implement confidence calculation in next checkpoint
-    // This will analyze URL patterns, text content, and strategy effectiveness
-    return 0.5; // Placeholder
-  }
 } 
