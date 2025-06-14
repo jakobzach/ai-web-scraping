@@ -154,7 +154,7 @@ export interface CareerLink {
 export interface CareerPageResult {
   success: boolean;
   careerPageUrl?: string;
-  detectionStrategy?: string;
+  detectionStrategy?: string | undefined;
   confidence: number; // 0-1 score of how confident we are this is the right careers page
   alternativeUrls?: string[]; // other potential career page URLs found
   error?: string;
@@ -173,4 +173,16 @@ export enum CareerPageDetectionStrategy {
   NAVIGATION_MENU = 'navigation_menu',
   SITE_SEARCH = 'site_search',
   CONTACT_PAGE = 'contact_page'
+}
+
+// Job extraction interfaces
+export interface JobExtractionResult {
+  success: boolean;
+  jobListings: JobListing[];
+  totalFound: number;
+  error?: string;
+  metadata: {
+    extractionTimeMs: number;
+    pageUrl: string;
+  };
 } 

@@ -23,6 +23,11 @@ export const extractedJobSchema = z.object({
   url: z.string().url().optional()
 });
 
+// Schema for Stagehand job extraction (multiple jobs)
+export const jobExtractionSchema = z.object({
+  jobs: z.array(extractedJobSchema)
+});
+
 // Company input schema for CSV validation
 export const companyInputSchema = z.object({
   name: z.string().min(1, 'Company name is required'),
