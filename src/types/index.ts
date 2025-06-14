@@ -112,6 +112,15 @@ export interface ScrapingConfig {
   enableRecording: boolean;
 }
 
+// Page timeout configuration for different scraping operations
+export interface PageTimeoutConfig {
+  navigation: number;
+  action: number;
+  extraction: number;
+  networkIdle: number;
+  domContentLoaded: number;
+}
+
 // Progress tracking
 export interface ProgressTracker {
   currentCompany: number;

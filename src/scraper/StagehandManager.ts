@@ -1,11 +1,12 @@
 import { Stagehand } from '@browserbasehq/stagehand';
 import stagehandConfig from '../../config/stagehand.config.js';
-import { ScrapingConfig } from '../types/index.js';
+import { ScrapingConfig, PageTimeoutConfig } from '../types/index.js';
 
 export class StagehandManager {
   private stagehand: Stagehand | null = null;
   private page: any = null; // Stagehand page instance
   private config: ScrapingConfig;
+  private pageTimeouts: PageTimeoutConfig;
 
   constructor(config?: Partial<ScrapingConfig>) {
     this.config = {
@@ -15,6 +16,15 @@ export class StagehandManager {
       headless: stagehandConfig.headless,
       enableRecording: stagehandConfig.enableRecording,
       ...config
+    };
+
+    // Initialize page timeout configurations for different operations
+    this.pageTimeouts = {
+      navigation: 30000,      // Page navigation timeout
+      action: 10000,          // Individual action timeout (clicks, typing)
+      extraction: 15000,      // Data extraction timeout
+      networkIdle: 5000,      // Wait for network to be idle
+      domContentLoaded: 10000 // Wait for DOM content to load
     };
   }
 
@@ -37,10 +47,8 @@ export class StagehandManager {
       await this.stagehand.init();
       this.page = this.stagehand.page;
       
-      // Set default timeouts based on configuration
-      if (this.page) {
-        await this.page.setDefaultTimeout(this.config.timeoutMs);
-      }
+      // Configure page with appropriate timeouts
+      await this.configurePageTimeouts();
 
       console.log('StagehandManager initialized successfully');
     } catch (error) {
@@ -75,6 +83,97 @@ export class StagehandManager {
    */
   getConfig(): ScrapingConfig {
     return { ...this.config };
+  }
+
+  /**
+   * Configure page with appropriate timeouts for different operations
+   */
+  private async configurePageTimeouts(): Promise<void> {
+    if (!this.page) {
+      throw new Error('Page not available for timeout configuration');
+    }
+
+    try {
+      // Set default timeout for general operations
+      await this.page.setDefaultTimeout(this.config.timeoutMs);
+      
+      // Set navigation timeout specifically
+      await this.page.setDefaultNavigationTimeout(this.pageTimeouts.navigation);
+      
+      console.log('Page timeouts configured successfully', {
+        default: this.config.timeoutMs,
+        navigation: this.pageTimeouts.navigation,
+        action: this.pageTimeouts.action,
+        extraction: this.pageTimeouts.extraction
+      });
+    } catch (error) {
+      console.error('Error configuring page timeouts:', error);
+      throw new Error(`Failed to configure page timeouts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Update timeout configuration for specific operations
+   */
+  updateTimeouts(newTimeouts: Partial<PageTimeoutConfig>): void {
+    this.pageTimeouts = { ...this.pageTimeouts, ...newTimeouts };
+    console.log('Timeout configuration updated:', this.pageTimeouts);
+  }
+
+  /**
+   * Get current timeout configuration
+   */
+  getTimeouts(): PageTimeoutConfig {
+    return { ...this.pageTimeouts };
+  }
+
+  /**
+   * Navigate to URL with configured timeout and wait strategies
+   */
+  async navigateWithTimeout(url: string, waitStrategy: 'load' | 'domcontentloaded' | 'networkidle0' | 'networkidle2' = 'load'): Promise<void> {
+    if (!this.page) {
+      throw new Error('Page not initialized. Call initialize() first.');
+    }
+
+    try {
+      console.log(`Navigating to: ${url} with wait strategy: ${waitStrategy}`);
+      
+      await this.page.goto(url, {
+        waitUntil: waitStrategy,
+        timeout: this.pageTimeouts.navigation
+      });
+
+      console.log(`Successfully navigated to: ${url}`);
+    } catch (error) {
+      console.error(`Navigation failed for ${url}:`, error);
+      throw new Error(`Navigation timeout or error for ${url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Wait for page to be ready for interaction
+   */
+  async waitForPageReady(): Promise<void> {
+    if (!this.page) {
+      throw new Error('Page not initialized');
+    }
+
+    try {
+      // Wait for DOM content to be loaded
+      await this.page.waitForLoadState('domcontentloaded', { 
+        timeout: this.pageTimeouts.domContentLoaded 
+      });
+      
+      // Wait for network to be mostly idle (useful for SPAs)
+      await this.page.waitForLoadState('networkidle', { 
+        timeout: this.pageTimeouts.networkIdle 
+      });
+
+      console.log('Page is ready for interaction');
+    } catch (error) {
+      console.warn('Page readiness check timed out, proceeding anyway:', error);
+      // Don't throw error as some pages might not reach ideal state
+    }
   }
 
   /**
@@ -135,9 +234,12 @@ export class StagehandManager {
       }
       
       const newPage = await this.stagehand.context.newPage();
-      await newPage.setDefaultTimeout(this.config.timeoutMs);
       
-      console.log('New page created successfully');
+      // Apply timeout configuration to new page
+      await newPage.setDefaultTimeout(this.config.timeoutMs);
+      await newPage.setDefaultNavigationTimeout(this.pageTimeouts.navigation);
+      
+      console.log('New page created with configured timeouts');
       return newPage;
     } catch (error) {
       console.error('Error creating new page:', error);
