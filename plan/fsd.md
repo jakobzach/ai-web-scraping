@@ -71,35 +71,28 @@ This document breaks down the MVP implementation into manageable work packages w
 - [x] Set up page configuration with appropriate timeouts
 - [x] Add user agent rotation and stealth settings
 
-### 2.2 Career Page Detection
+### 2.2 Career Page Detection ✅ **SIMPLIFIED APPROACH**
 - [x] Create `CareerPageFinder` class with intelligent discovery methods:
   ```typescript
   class CareerPageFinder {
     async findCareerPage(companyUrl: string): Promise<CareerPageResult>
-    async detectCareerLinks(): Promise<CareerLink[]>
-    async validateCareerPage(url: string): Promise<boolean>
+    private async validateCurrentPage(): Promise<{ isCareerPage: boolean; confidence: number }>
+    private async checkForJobContent(): Promise<boolean>
   }
   ```
-- [ ] Implement multi-strategy career page detection:
-  - **Primary Strategy**: Use Stagehand's `act()` for natural language navigation
+- [x] Implement **Pure Stagehand** career page detection (simplified approach):
+  - **Single Strategy**: Use Stagehand's `act()` with multilingual navigation
     ```typescript
-    await page.act("click on the careers link");
-    await page.act("find the jobs or hiring section");
+    await page.act("navigate to the careers, jobs, karriere, stellenangebote, or hiring section");
     ```
-  - **Pattern Strategy**: Check common URL patterns (`/careers`, `/jobs`, `/work-with-us`, `/opportunities`, `/join-us`, `/team`)
-  - **Text Search Strategy**: Use `observe()` to find links containing career-related keywords
-    ```typescript
-    const careerLinks = await page.observe("find all links that mention careers, jobs, hiring, or work with us");
-    ```
-- [ ] Add intelligent fallback strategies:
-  - Footer link scanning for career sections
-  - Navigation menu analysis using `extract()`
-  - Site search functionality if available
-  - Contact page analysis for hiring information
-- [ ] Implement career page validation:
-  - Check for job listing indicators (job titles, application buttons)
-  - Validate page contains hiring-related content
-  - Detect ATS integrations (Greenhouse, Lever, BambooHR)
+  - **Multilingual Support**: English + German career terms built-in
+  - **Intelligent Validation**: URL pattern checking + content analysis using `extract()`
+  - **Confidence Scoring**: URL match (30%) + content analysis (70%) for accurate detection
+- [x] Implement career page validation:
+  - Check URL patterns for English/German career indicators
+  - Validate page contains hiring-related content using Stagehand `extract()`
+  - Structured content analysis with Zod schema validation
+  - Confidence-based success determination (>50% threshold)
 
 ### 2.3 Job Listing Extraction
 - [ ] Implement `JobExtractor` using Stagehand's `extract()` method
