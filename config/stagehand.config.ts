@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const stagehandConfig = {
-  env: (process.env.STAGEHAND_ENV as 'development' | 'production') || 'development',
+  env: (process.env.STAGEHAND_ENV as 'LOCAL' | 'BROWSERBASE') || 'LOCAL',
   
   // API Key configuration
   apiKey: process.env.OPENAI_API_KEY,
