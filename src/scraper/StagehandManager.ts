@@ -7,6 +7,11 @@ export class StagehandManager {
   private page: any = null; // Stagehand page instance
   private config: ScrapingConfig;
   private pageTimeouts: PageTimeoutConfig;
+  private userAgents: string[] = [
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
+  ];
 
   constructor(config?: Partial<ScrapingConfig>) {
     this.config = {
@@ -49,6 +54,9 @@ export class StagehandManager {
       
       // Configure page with appropriate timeouts
       await this.configurePageTimeouts();
+      
+      // Apply minimal stealth settings
+      await this.applyStealthSettings();
 
       console.log('StagehandManager initialized successfully');
     } catch (error) {
@@ -177,6 +185,29 @@ export class StagehandManager {
   }
 
   /**
+   * Apply minimal stealth settings for SME websites
+   */
+  private async applyStealthSettings(): Promise<void> {
+    if (!this.page) {
+      throw new Error('Page not available for stealth configuration');
+    }
+
+    try {
+      // Set random user agent
+      const randomUserAgent = this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
+      await this.page.setUserAgent(randomUserAgent);
+      
+      // Remove webdriver property that screams "bot"
+      await this.page.evaluateOnNewDocument('() => { delete navigator.webdriver; }');
+      
+      console.log('Minimal stealth settings applied');
+    } catch (error) {
+      console.warn('Failed to apply stealth settings, continuing anyway:', error);
+      // Don't throw error as stealth is nice-to-have for SMEs
+    }
+  }
+
+  /**
    * Close the current page while keeping the browser instance active
    */
   async closePage(): Promise<void> {
@@ -239,7 +270,16 @@ export class StagehandManager {
       await newPage.setDefaultTimeout(this.config.timeoutMs);
       await newPage.setDefaultNavigationTimeout(this.pageTimeouts.navigation);
       
-      console.log('New page created with configured timeouts');
+      // Apply stealth settings to new page
+      try {
+        const randomUserAgent = this.userAgents[Math.floor(Math.random() * this.userAgents.length)];
+        await (newPage as any).setUserAgent(randomUserAgent);
+        await (newPage as any).evaluateOnNewDocument('() => { delete navigator.webdriver; }');
+      } catch (stealthError) {
+        console.warn('Could not apply stealth to new page, continuing anyway');
+      }
+      
+      console.log('New page created with timeouts and stealth settings');
       return newPage;
     } catch (error) {
       console.error('Error creating new page:', error);

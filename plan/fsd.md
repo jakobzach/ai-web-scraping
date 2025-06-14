@@ -69,7 +69,7 @@ This document breaks down the MVP implementation into manageable work packages w
 - [x] Create `StagehandManager` class to handle browser initialization
 - [x] Implement proper browser lifecycle management
 - [x] Set up page configuration with appropriate timeouts
-- [ ] Add user agent rotation and stealth settings
+- [x] Add user agent rotation and stealth settings
 
 ### 2.2 Career Page Detection
 - [ ] Create `CareerPageFinder` utility using Stagehand's `act()` and `observe()`
