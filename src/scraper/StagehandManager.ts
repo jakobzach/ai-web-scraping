@@ -76,4 +76,137 @@ export class StagehandManager {
   getConfig(): ScrapingConfig {
     return { ...this.config };
   }
+
+  /**
+   * Close the current page while keeping the browser instance active
+   */
+  async closePage(): Promise<void> {
+    try {
+      if (this.page) {
+        await this.page.close();
+        this.page = null;
+        console.log('Page closed successfully');
+      }
+    } catch (error) {
+      console.error('Error closing page:', error);
+      throw new Error(`Failed to close page: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Close the entire browser and clean up resources
+   */
+  async close(): Promise<void> {
+    try {
+      if (this.stagehand) {
+        await this.stagehand.close();
+        this.stagehand = null;
+        this.page = null;
+        console.log('StagehandManager closed successfully');
+      }
+    } catch (error) {
+      console.error('Error closing StagehandManager:', error);
+      throw new Error(`Failed to close StagehandManager: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Restart the browser instance (close and reinitialize)
+   */
+  async restart(): Promise<void> {
+    try {
+      console.log('Restarting StagehandManager...');
+      await this.close();
+      await this.initialize();
+      console.log('StagehandManager restarted successfully');
+    } catch (error) {
+      console.error('Error restarting StagehandManager:', error);
+      throw new Error(`Failed to restart StagehandManager: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Create a new page instance (for multi-page scenarios)
+   */
+  async createNewPage(): Promise<any> {
+    try {
+      if (!this.stagehand) {
+        throw new Error('StagehandManager not initialized. Call initialize() first.');
+      }
+      
+      const newPage = await this.stagehand.context.newPage();
+      await newPage.setDefaultTimeout(this.config.timeoutMs);
+      
+      console.log('New page created successfully');
+      return newPage;
+    } catch (error) {
+      console.error('Error creating new page:', error);
+      throw new Error(`Failed to create new page: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Set up graceful shutdown handler
+   */
+  setupGracefulShutdown(): void {
+    const shutdownHandler = async (signal: string) => {
+      console.log(`\nReceived ${signal}. Gracefully shutting down StagehandManager...`);
+      try {
+        await this.close();
+        console.log('StagehandManager shutdown complete');
+        process.exit(0);
+      } catch (error) {
+        console.error('Error during shutdown:', error);
+        process.exit(1);
+      }
+    };
+
+    // Handle common termination signals
+    process.on('SIGINT', () => shutdownHandler('SIGINT'));
+    process.on('SIGTERM', () => shutdownHandler('SIGTERM'));
+    process.on('SIGUSR2', () => shutdownHandler('SIGUSR2')); // For nodemon
+    
+    // Handle uncaught exceptions
+    process.on('uncaughtException', async (error) => {
+      console.error('Uncaught exception:', error);
+      try {
+        await this.close();
+      } catch (shutdownError) {
+        console.error('Error during emergency shutdown:', shutdownError);
+      }
+      process.exit(1);
+    });
+
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', async (reason, promise) => {
+      console.error('Unhandled rejection at:', promise, 'reason:', reason);
+      try {
+        await this.close();
+      } catch (shutdownError) {
+        console.error('Error during emergency shutdown:', shutdownError);
+      }
+      process.exit(1);
+    });
+  }
+
+  /**
+   * Get browser health status
+   */
+  async getHealthStatus(): Promise<{ healthy: boolean; details: string }> {
+    try {
+      if (!this.isInitialized()) {
+        return { healthy: false, details: 'StagehandManager not initialized' };
+      }
+
+      // Test if page is responsive
+      await this.page?.evaluate('() => document.readyState');
+      
+      return { healthy: true, details: 'Browser instance is healthy and responsive' };
+    } catch (error) {
+      return { 
+        healthy: false, 
+        details: `Browser health check failed: ${error instanceof Error ? error.message : 'Unknown error'}` 
+      };
+    }
+  }
 } 
