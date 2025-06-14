@@ -130,21 +130,32 @@ This document breaks down the MVP implementation into manageable work packages w
 ## 📦 Work Package 3: Batch Processing & CSV Integration
 
 ### 3.1 CSV Input Handler
-- [ ] Create `CSVProcessor` to read company list (Name, Website columns)
-- [ ] Implement input validation and URL normalization
-- [ ] Add support for different CSV formats and encoding
+- [x] Create `CSVProcessor` to read company list (Name, Website columns)
+- [x] Implement input validation and URL normalization
+- [x] Add support for different CSV formats and encoding
 
 ### 3.2 Batch Processing Engine
-- [ ] Implement `BatchScraper` for sequential processing
-- [ ] Add configurable delays between requests (2-5 seconds)
-- [ ] Create progress tracking and status updates
-- [ ] Implement graceful interruption handling (Ctrl+C)
+- [x] Implement `BatchScraper` for sequential processing
+- [x] Add configurable delays between requests (2-5 seconds)
+- [x] Create progress tracking and status updates
+- [x] Implement graceful interruption handling (Ctrl+C)
 
-### 3.3 Rate Limiting & Respect
+### 3.3 First Test Run
+- [ ] Create end-to-end test script using real test-websites.csv data
+- [ ] Validate complete pipeline: CSV → Career Page → Job Extraction → Data Processing
+- [ ] Test progress tracking and visual feedback during real scraping
+- [ ] Validate graceful interruption with Ctrl+C during live test
+- [ ] Measure and document performance metrics (time per company, success rate)
+- [ ] Generate and validate JSON output format
+- [ ] Document issues found and limitations discovered
+- [ ] Create baseline performance benchmarks for future optimization
+
+### 3.4 Rate Limiting & Respect
 - [ ] Add domain-based rate limiting
 - [ ] Implement random delays to appear more human-like
 - [ ] Add `robots.txt` checking (optional but good practice)
 - [ ] Monitor and adjust scraping speed based on website response
+
 
 **Estimated Time**: 3-4 hours  
 **Dependencies**: Work Package 2  
