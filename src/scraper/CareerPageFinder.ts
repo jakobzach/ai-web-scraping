@@ -23,8 +23,40 @@ export class CareerPageFinder {
       // Navigate to the company's main page first
       await this.page.goto(companyUrl, { waitUntil: 'domcontentloaded' });
       
-      // Let Stagehand handle everything with multilingual commands
-      await this.page.act("navigate to the careers, jobs, karriere, stellenangebote, or hiring section");
+            // Try direct navigation to careers section
+      const careerInstructions = [
+        'Navigate to jobs section',
+        'Go to careers page',
+        'Click on jobs',
+        'Click on careers', 
+        'Navigate to karriere',
+        'Go to stellenangebote',
+        'Find job openings'
+      ];
+
+      let navigationSuccessful = false;
+      for (const instruction of careerInstructions) {
+        try {
+          console.log(`   🔍 Trying: ${instruction}`);
+          
+                     // Use direct act for navigation
+           const result = await this.page.act(instruction);
+          
+          if (result) {
+            console.log(`   🔍 Career navigation executed`);
+            navigationSuccessful = true;
+            break;
+          }
+        } catch (error) {
+          // Continue to next instruction if this one fails
+          console.log(`   ⚠️ ${instruction} failed`);
+          continue;
+        }
+      }
+      
+      if (!navigationSuccessful) {
+        console.log(`   ⚠️ Could not navigate to careers section`);
+      }
       
       // Wait for potential navigation
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -121,7 +153,7 @@ export class CareerPageFinder {
         instruction: "check if this page contains job listings, career opportunities, stellenangebote, or hiring information",
         schema: z.object({
           hasJobContent: z.boolean(),
-          indicators: z.array(z.string()).optional()
+          indicators: z.array(z.string()).nullable().optional()
         })
       });
       

@@ -141,8 +141,9 @@ This document breaks down the MVP implementation into manageable work packages w
 - [x] Implement graceful interruption handling (Ctrl+C)
 
 ### 3.3 First Test Run
-- [ ] Create end-to-end test script using real test-websites.csv data
+- [x] Create end-to-end test script using real test-websites.csv data
 - [ ] Validate complete pipeline: CSV → Career Page → Job Extraction → Data Processing
+  - [x] Add handler for cookie banners
 - [ ] Test progress tracking and visual feedback during real scraping
 - [ ] Validate graceful interruption with Ctrl+C during live test
 - [ ] Measure and document performance metrics (time per company, success rate)

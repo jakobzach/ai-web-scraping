@@ -139,6 +139,9 @@ export class BatchScraper {
       console.log(`   🌐 Navigating to ${company.website}`);
       await page.goto(company.website);
       
+      // Step 1.5: Handle cookie consent banners
+      await this.stagehandManager.handleCookieBanner();
+      
       // Step 2: Find careers page
       console.log(`   🔍 Looking for careers page...`);
       const careerFinder = new CareerPageFinder(page, company.website);
