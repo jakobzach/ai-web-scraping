@@ -43,20 +43,20 @@ public/
 ## 📦 Work Package 1: Extract Working Patterns
 
 ### 1.1 Document Working Approach
-- [ ] Analyze what specifically works in `manual-debug.ts`
-- [ ] Document the successful cookie banner handling pattern
-- [ ] Document the successful career page navigation pattern
-- [ ] Identify minimal Stagehand configuration that works
+- [x] Analyze what specifically works in `manual-debug.ts`
+- [x] Document the successful cookie banner handling pattern
+- [x] Document the successful career page navigation pattern
+- [x] Identify minimal Stagehand configuration that works
 
 ### 1.2 Create New Types File
-- [ ] Create `src/types.ts` with only essential interfaces:
+- [x] Create `src/types.ts` with only essential interfaces:
   - `CompanyInput` (name, website, careers_url?)
   - `JobListing` (matching PRD schema, optimized for frontend)
   - `ScrapingMetadata` (run timestamp, counts)
-- [ ] Remove all unused enums, complex configurations, and abstractions
+- [x] Remove all unused enums, complex configurations, and abstractions
 
 ### 1.3 Create Utilities File
-- [ ] Create `src/utils.ts` with focused helpers:
+- [x] Create `src/utils.ts` with focused helpers:
   - `readCompaniesFromCSV()` - read CSV with Name, Website, Careers-URL columns
   - `writeCompaniesCSV()` - write back discovered careers URLs to CSV
   - `writeJobsJSON()` - output single jobs.json file to /public
