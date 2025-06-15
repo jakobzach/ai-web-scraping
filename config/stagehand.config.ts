@@ -46,7 +46,7 @@ export const stagehandConfig = {
   },
   
   // Action and extraction settings
-  actionTimeout: 10000, // Timeout for individual actions
+  actionTimeout: 5000, // Timeout for individual actions
   observeTimeout: 5000,  // Timeout for observe operations
   
   // For large-scale job extraction

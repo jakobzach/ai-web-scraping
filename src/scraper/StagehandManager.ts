@@ -1,6 +1,7 @@
 import { Stagehand } from '@browserbasehq/stagehand';
 import stagehandConfig from '../../config/stagehand.config.js';
 import { ScrapingConfig, PageTimeoutConfig } from '../types/index.js';
+import { z } from 'zod';
 
 export class StagehandManager {
   private stagehand: Stagehand | null = null;
@@ -25,11 +26,11 @@ export class StagehandManager {
 
     // Initialize page timeout configurations for different operations
     this.pageTimeouts = {
-      navigation: 30000,      // Page navigation timeout
-      action: 10000,          // Individual action timeout (clicks, typing)
-      extraction: 15000,      // Data extraction timeout
+      navigation: 3000,      // Page navigation timeout
+      action: 1000,          // Individual action timeout (clicks, typing)
+      extraction: 1500,      // Data extraction timeout
       networkIdle: 5000,      // Wait for network to be idle
-      domContentLoaded: 10000 // Wait for DOM content to load
+      domContentLoaded: 2000 // Wait for DOM content to load
     };
   }
 
@@ -181,6 +182,107 @@ export class StagehandManager {
     } catch (error) {
       console.warn('Page readiness check timed out, proceeding anyway:', error);
       // Don't throw error as some pages might not reach ideal state
+    }
+  }
+
+  /**
+   * Handle cookie consent banners using Stagehand best practices
+   * Uses observe -> act pattern for better reliability and performance
+   */
+  async handleCookieBanner(): Promise<boolean> {
+    if (!this.page) {
+      throw new Error('Page not initialized');
+    }
+
+    try {
+      console.log('   🍪 Checking for cookie consent banners...');
+      
+      // Wait for page to fully load including any cookie banners
+      await this.page.waitForTimeout(3000);
+      
+      // Debug: See what elements are actually available on the page
+      console.log('   🔍 Checking what elements are available on the page...');
+      try {
+        const availableElements = await this.page.observe();
+        console.log(`   🔍 Found ${availableElements?.length || 0} total actionable elements on page`);
+        if (availableElements && availableElements.length > 0) {
+          console.log('   🔍 Sample of available elements:');
+          availableElements.slice(0, 5).forEach((element: any, index: number) => {
+            console.log(`     ${index + 1}. ${element.description || 'No description'} (${element.method || element.action})`);
+          });
+        }
+      } catch (debugError) {
+        console.log('   ⚠️ Could not observe available elements:', debugError);
+      }
+      
+      // Use observe-then-act pattern for better reliability
+      const cookieInstructions = [
+        'Accept all cookies',
+        'Accept cookies', 
+        'Click accept all',
+        'Dismiss cookie banner',
+        'Close privacy notice',
+        // Add German variations for German websites
+        'Alle Cookies akzeptieren',
+        'Cookies akzeptieren',
+        'Akzeptieren',
+        'Cookie-Banner schließen',
+        'Datenschutzhinweis schließen'
+      ];
+
+      for (const instruction of cookieInstructions) {
+        try {
+          console.log(`   🍪 Observing: ${instruction}`);
+          
+          // First observe to get the action without executing it
+          const actions = await this.page.observe(instruction);
+          
+          // Debug: Always log what observe() returns
+          console.log(`   🔍 Raw observe result for "${instruction}":`, JSON.stringify(actions, null, 2));
+          
+          if (actions && actions.length > 0) {
+            console.log(`   🍪 Found ${actions.length} possible action(s) for: ${instruction}`);
+            
+            // Log observed actions for debugging
+            console.log('   🔍 Observed actions:');
+            actions.forEach((action: any, index: number) => {
+              console.log(`     ${index + 1}. ${JSON.stringify({
+                description: action.description,
+                method: action.method || action.action,
+                selector: action.selector,
+                arguments: action.arguments
+              }, null, 2)}`);
+            });
+            
+            // Act on the first (best) observed action - no LLM inference needed
+            const topAction = actions[0];
+            console.log(`   🎯 Executing top action: ${topAction.description || 'No description'}`);
+            await this.page.act(topAction);
+            
+            console.log('   🍪 Cookie action executed, waiting...');
+            
+            // Wait for banner to disappear
+            await this.page.waitForTimeout(3000);
+            
+            console.log('   ✅ Cookie banner handling completed');
+            return true;
+          } else {
+            console.log(`   ⚠️ No actions found for: ${instruction}`);
+            console.log(`   🔍 Actions array is: ${actions === null ? 'null' : actions === undefined ? 'undefined' : `array with length ${actions.length}`}`);
+          }
+        } catch (error) {
+          // Continue to next instruction if this one fails
+          console.log(`   ⚠️ ${instruction} failed:`, error instanceof Error ? error.message : 'Unknown error');
+          continue;
+        }
+      }
+      
+      console.log('   ℹ️ No cookie banner buttons found');
+      return false;
+      
+    } catch (error) {
+      console.log('   ⚠️ Cookie banner handling failed:', error instanceof Error ? error.message : 'Unknown error');
+      return false;
     }
   }
 

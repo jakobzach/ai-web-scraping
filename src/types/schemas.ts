@@ -18,9 +18,9 @@ export const jobListingSchema = z.object({
 export const extractedJobSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(10),
-  location: z.string().optional(),
-  type: z.string().optional(),
-  url: z.string().url().optional()
+  location: z.string().nullable().optional(),
+  type: z.string().nullable().optional(),
+  url: z.string().url().nullable().optional()
 });
 
 // Schema for Stagehand job extraction (multiple jobs)
