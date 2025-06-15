@@ -71,6 +71,25 @@ export function generateJobId(): string {
 }
 
 /**
+ * Check if a string is a valid URL (http/https or relative path)
+ */
+export function isValidUrl(url: string): boolean {
+  if (!url) return false;
+  
+  // Check for absolute URLs
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return true;
+  }
+  
+  // Check for relative URLs (starts with / or contains . for file extensions)
+  if (url.startsWith('/') || url.includes('.')) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
  * Basic job data cleaning
  */
 export function cleanJobData(job: Partial<JobListing>): JobListing | null {

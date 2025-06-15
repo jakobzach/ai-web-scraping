@@ -73,9 +73,9 @@ public/
 ## 📦 Work Package 2: Core Scraper Implementation
 
 ### 2.1 Main Scraper Class
-- [ ] Create `src/scraper.ts` with single `SimpleScraper` class
-- [ ] Direct Stagehand initialization (copy working patterns from debug)
-- [ ] Implement `scrapeCompany()` method using proven approach:
+- [x] Create `src/scraper.ts` with single `SimpleScraper` class
+- [x] Direct Stagehand initialization (copy working patterns from debug)
+- [x] Implement `scrapeCompany()` method using proven approach:
   ```typescript
   // Working pattern from manual-debug.ts
   await page.goto(url);
@@ -86,10 +86,10 @@ public/
   ```
 
 ### 2.2 Cookie Banner Handling
-- [ ] Extract exact working pattern from `manual-debug.ts`
-- [ ] Implement as simple method: `handleCookies(page)`
-- [ ] Support both English and German terms
-- [ ] Use observe->act pattern that actually works
+- [x] Extract exact working pattern from `manual-debug.ts`
+- [x] Implement as simple method: `handleCookies(page)`
+- [x] Support both English and German terms
+- [x] Use observe->act pattern that actually works
 
 ### 2.3 Smart Career Page Handling
 - [ ] **If CSV has careers URL**: Navigate directly to careers page
