@@ -13,6 +13,25 @@ export interface CompanyInput {
 }
 
 /**
+ * Job type enum
+ */
+export enum JobType {
+  FULL_TIME = "Full-time",
+  PART_TIME = "Part-time", 
+  CONTRACT = "Contract",
+  INTERNSHIP = "Internship"
+}
+
+/**
+ * Language of the job listing enum
+ */
+export enum LanguageOfListing {
+  ENGLISH = "en",
+  GERMAN = "de", 
+  FRENCH = "fr"
+}
+
+/**
  * SINGLE SOURCE OF TRUTH: Core job field definitions
  * To add a new field: Add it here once, then add one line to each schema below
  */
@@ -20,9 +39,9 @@ const jobFieldDefinitions = {
   title: z.string().describe("The exact job title as displayed on the page"),
   description: z.string().describe("The complete job description, summary, or requirements text"),
   location: z.string().describe("The job location (city, country, 'Remote', etc.) or null if not specified"),
-  type: z.string().describe("Employment type like 'Full-time', 'Part-time', 'Contract', 'Internship' or null if not specified"),
+  type: z.nativeEnum(JobType).describe("Employment type from predefined options"),
   url: z.string().describe("The actual href URL from the apply/view job button or link"),
-  languageOfListing: z.string().describe("The language of the job listing (e.g., 'en', 'de', 'fr') or null if not determinable")
+  languageOfListing: z.nativeEnum(LanguageOfListing).describe("The language of the job listing using ISO language codes")
 } as const;
 
 /**
@@ -64,11 +83,6 @@ export const JobListingSchema = z.object({
  * TypeScript type derived from the final schema - automatically stays in sync
  */
 export type JobListing = z.infer<typeof JobListingSchema>;
-
-/**
- * TypeScript type for an array of JobListings
- */
-export type JobListings = JobListing[];
 
 /**
  * Simple metadata for the scraping run

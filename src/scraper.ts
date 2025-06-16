@@ -3,7 +3,7 @@
 
 import { Stagehand } from "@browserbasehq/stagehand";
 import dotenv from "dotenv";
-import { CompanyInput, JobListing, JobExtractionSchema, ScrapingMetadata } from './types.js';
+import { CompanyInput, JobListing, JobExtractionSchema, ScrapingMetadata, JobType, LanguageOfListing } from './types.js';
 import { readCompaniesFromCSV, writeCompaniesCSV, writeJobsJSON, generateJobId, cleanJobData, isValidUrl, ensureUrlProtocol } from './utils.js';
 
 dotenv.config();
@@ -139,8 +139,14 @@ export class SimpleScraper {
           
           // Only include optional fields if they have values (handling nullable)
           if (jobData.location && jobData.location.trim()) jobInput.location = jobData.location.trim();
-          if (jobData.type && jobData.type.trim()) jobInput.type = jobData.type.trim();
-          if (jobData.languageOfListing && jobData.languageOfListing.trim()) jobInput.languageOfListing = jobData.languageOfListing.trim();
+          if (jobData.type && jobData.type.trim()) {
+            const jobType = Object.values(JobType).find(t => t === jobData.type!.trim());
+            if (jobType) jobInput.type = jobType;
+          }
+          if (jobData.languageOfListing && jobData.languageOfListing.trim()) {
+            const language = Object.values(LanguageOfListing).find(l => l === jobData.languageOfListing!.trim());
+            if (language) jobInput.languageOfListing = language;
+          }
           
           // Handle URL with fallback to careers page
           const extractedUrl = jobData.url?.trim();
@@ -187,8 +193,14 @@ export class SimpleScraper {
               
               // Only include optional fields if they have values (handling nullable)
               if (jobData.location && jobData.location.trim()) jobInput.location = jobData.location.trim();
-              if (jobData.type && jobData.type.trim()) jobInput.type = jobData.type.trim();
-              if (jobData.languageOfListing && jobData.languageOfListing.trim()) jobInput.languageOfListing = jobData.languageOfListing.trim();
+              if (jobData.type && jobData.type.trim()) {
+                const jobType = Object.values(JobType).find(t => t === jobData.type!.trim());
+                if (jobType) jobInput.type = jobType;
+              }
+              if (jobData.languageOfListing && jobData.languageOfListing.trim()) {
+                const language = Object.values(LanguageOfListing).find(l => l === jobData.languageOfListing!.trim());
+                if (language) jobInput.languageOfListing = language;
+              }
               
               // Handle URL with fallback to careers page
               const extractedUrl = jobData.url?.trim();

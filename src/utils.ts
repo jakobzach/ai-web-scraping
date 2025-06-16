@@ -4,7 +4,7 @@
 import fs from 'fs-extra';
 import csv from 'csv-parser';
 import { v4 as uuidv4 } from 'uuid';
-import { CompanyInput, JobListing, JobsOutput, ScrapingMetadata } from './types.js';
+import { CompanyInput, JobListing, JobsOutput, ScrapingMetadata, JobType, LanguageOfListing } from './types.js';
 
 /**
  * Read companies from CSV file - simple version
@@ -98,6 +98,24 @@ export function isValidUrl(url: string): boolean {
 }
 
 /**
+ * Convert string to JobType enum value
+ */
+function stringToJobType(value: string | null | undefined): JobType | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return Object.values(JobType).find(jobType => jobType === trimmed) || undefined;
+}
+
+/**
+ * Convert string to LanguageOfListing enum value
+ */
+function stringToLanguageOfListing(value: string | null | undefined): LanguageOfListing | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  return Object.values(LanguageOfListing).find(lang => lang === trimmed) || undefined;
+}
+
+/**
  * Basic job data cleaning
  */
 export function cleanJobData(job: Partial<JobListing>): JobListing | null {
@@ -112,9 +130,9 @@ export function cleanJobData(job: Partial<JobListing>): JobListing | null {
     // Include all optional fields (will be undefined if not provided)
     description: job.description?.trim() || undefined,
     location: job.location?.trim() || undefined,
-    type: job.type?.trim() || undefined,
+    type: stringToJobType(job.type as string),
     url: job.url?.trim() || undefined,
-    languageOfListing: job.languageOfListing?.trim() || undefined
+    languageOfListing: stringToLanguageOfListing(job.languageOfListing as string)
   };
   
   return cleaned;
