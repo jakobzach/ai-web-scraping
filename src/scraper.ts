@@ -109,6 +109,41 @@ export class SimpleScraper {
   }
 
   /**
+   * Process raw job data from extraction into JobListing format
+   */
+  private processJobData(jobData: any, company: CompanyInput, careersUrl: string): JobListing | null {
+    const jobInput: Partial<JobListing> = {
+      title: jobData.title,
+      description: jobData.description || undefined,
+      company: company.name,
+      scrapeTimestamp: new Date().toISOString(),
+      scrapeRunId: this.runId
+    };
+    
+    // Only include optional fields if they have values (handling nullable)
+    if (jobData.location && jobData.location.trim()) jobInput.location = jobData.location.trim();
+    if (jobData.type && jobData.type.trim()) {
+      const jobType = Object.values(JobType).find(t => t === jobData.type!.trim());
+      if (jobType) jobInput.type = jobType;
+    }
+    if (jobData.languageOfListing && jobData.languageOfListing.trim()) {
+      const language = Object.values(LanguageOfListing).find(l => l === jobData.languageOfListing!.trim());
+      if (language) jobInput.languageOfListing = language;
+    }
+    
+    // Handle URL with fallback to careers page
+    const extractedUrl = jobData.url?.trim();
+    if (extractedUrl && isValidUrl(extractedUrl)) {
+      jobInput.url = extractedUrl;
+    } else {
+      // Use careers page URL as fallback when individual job URL not found
+      jobInput.url = careersUrl;
+    }
+    
+    return cleanJobData(jobInput);
+  }
+
+  /**
    * Extract jobs from current careers page using Stagehand's schema-based extract
    */
   private async extractJobs(company: CompanyInput, careersUrl: string): Promise<JobListing[]> {
@@ -126,39 +161,10 @@ export class SimpleScraper {
       
       console.log(`Raw extraction result:`, JSON.stringify(extractedData, null, 2));
       
-      // Process extracted jobs using the schema-based data
+      // Process extracted jobs using the helper method
       if (extractedData?.jobs && Array.isArray(extractedData.jobs)) {
         for (const jobData of extractedData.jobs) {
-          const jobInput: Partial<JobListing> = {
-            title: jobData.title,
-            description: jobData.description || undefined,
-            company: company.name,
-            scrapeTimestamp: new Date().toISOString(),
-            scrapeRunId: this.runId
-          };
-          
-          // Only include optional fields if they have values (handling nullable)
-          if (jobData.location && jobData.location.trim()) jobInput.location = jobData.location.trim();
-          if (jobData.type && jobData.type.trim()) {
-            const jobType = Object.values(JobType).find(t => t === jobData.type!.trim());
-            if (jobType) jobInput.type = jobType;
-          }
-          if (jobData.languageOfListing && jobData.languageOfListing.trim()) {
-            const language = Object.values(LanguageOfListing).find(l => l === jobData.languageOfListing!.trim());
-            if (language) jobInput.languageOfListing = language;
-          }
-          
-          // Handle URL with fallback to careers page
-          const extractedUrl = jobData.url?.trim();
-          if (extractedUrl && isValidUrl(extractedUrl)) {
-            jobInput.url = extractedUrl;
-          } else {
-            // Use careers page URL as fallback when individual job URL not found
-            jobInput.url = careersUrl;
-          }
-          
-          const cleanedJob = cleanJobData(jobInput);
-          
+          const cleanedJob = this.processJobData(jobData, company, careersUrl);
           if (cleanedJob) {
             jobs.push(cleanedJob);
           }
@@ -181,39 +187,10 @@ export class SimpleScraper {
             schema: JobExtractionSchema
           });
           
+          // Process additional jobs using the same helper method
           if (moreData?.jobs && Array.isArray(moreData.jobs)) {
             for (const jobData of moreData.jobs) {
-              const jobInput: Partial<JobListing> = {
-                title: jobData.title,
-                description: jobData.description || undefined,
-                company: company.name,
-                scrapeTimestamp: new Date().toISOString(),
-                scrapeRunId: this.runId
-              };
-              
-              // Only include optional fields if they have values (handling nullable)
-              if (jobData.location && jobData.location.trim()) jobInput.location = jobData.location.trim();
-              if (jobData.type && jobData.type.trim()) {
-                const jobType = Object.values(JobType).find(t => t === jobData.type!.trim());
-                if (jobType) jobInput.type = jobType;
-              }
-              if (jobData.languageOfListing && jobData.languageOfListing.trim()) {
-                const language = Object.values(LanguageOfListing).find(l => l === jobData.languageOfListing!.trim());
-                if (language) jobInput.languageOfListing = language;
-              }
-              
-              // Handle URL with fallback to careers page
-              const extractedUrl = jobData.url?.trim();
-              if (extractedUrl && isValidUrl(extractedUrl)) {
-                jobInput.url = extractedUrl;
-              } else {
-                // Use careers page URL as fallback when individual job URL not found
-                jobInput.url = careersUrl;
-                console.log(`Using careers page fallback for ${jobData.title}: ${careersUrl}`);
-              }
-              
-              const cleanedJob = cleanJobData(jobInput);
-              
+              const cleanedJob = this.processJobData(jobData, company, careersUrl);
               if (cleanedJob) {
                 jobs.push(cleanedJob);
               }
