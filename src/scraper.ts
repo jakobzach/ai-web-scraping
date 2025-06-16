@@ -2,9 +2,8 @@
 // Target: ~100-150 lines, focus on reliability over features
 
 import { Stagehand } from "@browserbasehq/stagehand";
-import { z } from "zod";
 import dotenv from "dotenv";
-import { CompanyInput, JobListing, ScrapingMetadata } from './types.js';
+import { CompanyInput, JobListing, JobExtractionSchema, ScrapingMetadata } from './types.js';
 import { readCompaniesFromCSV, writeCompaniesCSV, writeJobsJSON, generateJobId, cleanJobData, isValidUrl, ensureUrlProtocol } from './utils.js';
 
 dotenv.config();
@@ -119,19 +118,10 @@ export class SimpleScraper {
     try {
       console.log("Extracting jobs from careers page...");
       
-      // Use Stagehand's schema-based extract method with property descriptions
+      // Use Stagehand's schema-based extract method with centralized schema
       const extractedData = await page.extract({
         instruction: "Extract all job listings visible on this careers page.",
-        schema: z.object({
-          jobs: z.array(z.object({
-            title: z.string().describe("The exact job title as displayed on the page"),
-            description: z.string().describe("The complete job description, summary, or requirements text"),
-            location: z.string().nullable().describe("The job location (city, country, 'Remote', etc.) or null if not specified"),
-            type: z.string().nullable().describe("Employment type like 'Full-time', 'Part-time', 'Contract', 'Internship' or null if not specified"),
-            url: z.string().nullable().describe("The actual href URL from the apply/view job button or link"),
-            languageOfListing: z.string().nullable().describe("The language of the job listing (e.g., 'en', 'de', 'fr') or null if not determinable")
-          }))
-        })
+        schema: JobExtractionSchema
       });
       
       console.log(`Raw extraction result:`, JSON.stringify(extractedData, null, 2));
@@ -141,7 +131,7 @@ export class SimpleScraper {
         for (const jobData of extractedData.jobs) {
           const jobInput: Partial<JobListing> = {
             title: jobData.title,
-            description: jobData.description,
+            description: jobData.description || undefined,
             company: company.name,
             scrapeTimestamp: new Date().toISOString(),
             scrapeRunId: this.runId
@@ -179,26 +169,17 @@ export class SimpleScraper {
           await page.act(loadMoreActions[0]!);
           await page.waitForTimeout(2000);
           
-          // Extract additional jobs after pagination using schema with descriptions
+          // Extract additional jobs after pagination using centralized schema
           const moreData = await page.extract({
             instruction: "Extract all job listings visible on this careers page.",
-            schema: z.object({
-                              jobs: z.array(z.object({
-                  title: z.string().describe("The exact job title as displayed on the page"),
-                  description: z.string().describe("The complete job description, summary, or requirements text"),
-                  location: z.string().nullable().describe("The job location (city, country, 'Remote', etc.) or null if not specified"),
-                  type: z.string().nullable().describe("Employment type like 'Full-time', 'Part-time', 'Contract', 'Internship' or null if not specified"),
-                  url: z.string().nullable().describe("The actual href URL from the apply/view job button or link. This could be a web page URL or a PDF document URL. Extract the full URL, NOT button text like 'Apply now'"),
-                  languageOfListing: z.string().nullable().describe("The language of the job listing (e.g., 'en', 'de', 'fr') or null if not determinable")
-                }))
-            })
+            schema: JobExtractionSchema
           });
           
           if (moreData?.jobs && Array.isArray(moreData.jobs)) {
             for (const jobData of moreData.jobs) {
               const jobInput: Partial<JobListing> = {
                 title: jobData.title,
-                description: jobData.description,
+                description: jobData.description || undefined,
                 company: company.name,
                 scrapeTimestamp: new Date().toISOString(),
                 scrapeRunId: this.runId

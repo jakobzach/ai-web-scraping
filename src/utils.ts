@@ -108,14 +108,14 @@ export function cleanJobData(job: Partial<JobListing>): JobListing | null {
     company: job.company.trim(),
     title: job.title.trim(),
     scrapeTimestamp: job.scrapeTimestamp || new Date().toISOString(),
-    scrapeRunId: job.scrapeRunId || ''
+    scrapeRunId: job.scrapeRunId || '',
+    // Include all optional fields (will be undefined if not provided)
+    description: job.description?.trim() || undefined,
+    location: job.location?.trim() || undefined,
+    type: job.type?.trim() || undefined,
+    url: job.url?.trim() || undefined,
+    languageOfListing: job.languageOfListing?.trim() || undefined
   };
-  
-  // Only include optional fields if they have values
-  if (job.location?.trim()) cleaned.location = job.location.trim();
-  if (job.type?.trim()) cleaned.type = job.type.trim();
-  if (job.url?.trim()) cleaned.url = job.url.trim();
-  if (job.description?.trim()) cleaned.description = job.description.trim();
   
   return cleaned;
 } 
