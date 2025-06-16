@@ -13,6 +13,7 @@
     "dev": "tsx src/index.ts",
     "scrape": "tsx src/scraper/index.ts",
     "test:e2e": "tsx tests/test-e2e.ts",
+    "test:scraper": "tsx tests/test-scraper.ts",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"

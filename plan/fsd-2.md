@@ -2,8 +2,27 @@
 
 **Project**: Lightweight Job Scraper for Static JSON Output  
 **Version**: 2.0  
-**Status**: Architecture Planning  
+**Status**: Core Implementation Complete - Quality Improvements Phase  
 **Approach**: Minimal scraper → single `jobs.json` file → Next.js frontend
+
+## 📊 Current Status (Post WP2 Completion)
+
+**✅ Completed**: Work Packages 1 & 2 - Core scraper functionality  
+**📈 Test Results**: 58 jobs extracted from 13 companies (100% success rate)  
+**🎯 Next Phase**: Data quality improvements based on analysis in `/plan/quality-issues.md`
+
+**Key Achievements**:
+- Cookie banner handling: 100% success rate
+- Career page discovery: 77% success rate (10/13 companies)
+- Basic job extraction working with schema validation
+- CSV updates and JSON output generation functional
+
+**Quality Issues Identified**:
+- 31% missing job descriptions or "null" strings
+- 66% missing locations
+- 69% missing job types
+- 10% duplicate entries
+- Some invalid URLs (button text instead of links)
 
 ## 🎯 Project Goals
 
@@ -102,14 +121,110 @@ Addendum: Added support for extracting the language of the listing.
 - [x] No complex confidence scoring - just success/failure
 
 ### 2.4 Job Extraction
-- [ ] Use Stagehand's `extract()` with simple schema
-- [ ] Extract all visible jobs in single operation
-- [ ] Basic pagination handling with `act("load more")` pattern
-- [ ] Generate job IDs and clean data inline
+- [x] Use Stagehand's `extract()` with simple schema
+- [x] Extract all visible jobs in single operation
+- [x] Basic pagination handling with `act("load more")` pattern
+- [x] Generate job IDs and clean data inline
 
 **Estimated Time**: 3-4 hours  
 **Dependencies**: Work Package 1  
 **Deliverable**: Working single-company scraper
+
+---
+
+## 📦 Work Package 2.5: Career Page Detection Accuracy
+
+**Status**: Focused on improving career page discovery and validation  
+**Test Validation**: `/data/input/test-target.csv` contains ground truth careers URLs
+
+### 2.5.1 Enhanced Career Page Detection
+- [ ] **Improve career page detection accuracy**
+  - Add validation to detect when we've landed on wrong pages (News, About, etc.)
+  - If the careers page URL is the same as the website URL, we definitely didn't find the careers page
+  - Look for career-specific indicators: job titles, application forms, "Apply" buttons
+  - Add fallback retry with different navigation terms if first attempt fails
+
+### 2.5.2 Multi-Level Career Page Navigation
+- [ ] **Handle nested career page structures**
+  - Some sites have careers overview page → separate job listings page
+  - Detect when current page has links to actual job listings
+  - Navigate one level deeper if needed to find actual job postings
+  - Validate we've reached the page with individual job listings
+
+### 2.5.3 Career Page Detection Test
+- [ ] **Create dedicated test for career page detection**
+  - For every test, create a new copy of test-websites.csv with the timestamp as a prefix so we can review old tests
+  - Validate test results against `test-target.csv` ground truth data
+  - Compare discovered URLs with known correct careers URLs
+  - Measure accuracy: exact matches, domain matches, functional equivalents
+
+### 2.5.4 Career Page Validation Logic
+- [ ] **Implement robust validation**
+  - Check for career-specific content indicators
+  - Validate page contains job listings or job-related content
+  - Reject pages that are clearly not careers-related
+
+**Estimated Time**: 3-4 hours  
+**Dependencies**: Work Package 2  
+**Deliverable**: Accurate career page detection with validation test
+
+---
+
+## 📦 Work Package 2.6: Individual Job Detail Extraction
+
+### 2.6.1 Job Detail Page Navigation
+- [ ] **Implement job detail page navigation**
+  - After finding careers page, identify individual job listing links
+  - Click into individual job postings to get complete information
+  - Extract full job descriptions, location, language of listing from detail pages
+  - Handle "Apply" buttons and external application systems
+
+### 2.6.2 Content Validation & Filtering
+- [ ] **Add scraped content validation**
+  - Detect and filter out "null" strings and empty descriptions
+  - Validate job titles are specific (not generic like "Jobs" or "Open Positions")
+  - Ensure descriptions contain meaningful content (minimum length, keywords)
+  - Filter out navigation elements, headers, footers from job content
+
+### 2.6.3 URL and Data Cleaning
+- [ ] **Improve URL extraction and validation**
+  - Convert relative URLs to absolute URLs using base domain
+  - Detect button text vs actual URLs ("MEHR ERFAHREN" → actual job URL)
+  - Validate URLs are actionable and point to job details
+  - Implement fallback to careers page URL if individual job URL unavailable
+
+**Estimated Time**: 4-5 hours  
+**Dependencies**: Work Package 2.5  
+**Deliverable**: Complete job information from individual job detail pages
+
+---
+
+## 📦 Work Package 2.7: Data Quality & Standardization
+
+### 2.7.1 Enhanced AI Extraction Prompts
+- [ ] **Improve schema descriptions and AI prompts**
+  - More specific Zod schema descriptions for better AI guidance
+  - Add examples of good vs bad data in schema descriptions
+  - Improve language detection prompts with context clues
+  - Better job type classification with employment indicators
+
+### 2.7.2 Deduplication Logic
+- [ ] **Implement job deduplication**
+  - Detect duplicate jobs by title + company combination
+  - Handle pagination duplicates (same job appearing multiple times)
+  - Use fuzzy matching for similar job titles
+  - Keep most complete version when duplicates found
+
+### 2.7.3 Data Standardization
+- [ ] **Standardize extracted data formats**
+  - Consistent location formatting (City, Country vs City, State, Country)
+  - Standardize language codes (en, de, etc.)
+  - Normalize job types to enum values with fallback logic
+  - Clean and format job descriptions (remove extra whitespace, HTML artifacts)
+
+**Estimated Time**: 3-4 hours  
+**Dependencies**: Work Package 2.6  
+**Deliverable**: Consistent, deduplicated, well-formatted job data
 
 ---
 
@@ -149,30 +264,41 @@ Addendum: Added support for extracting the language of the listing.
 
 ---
 
-## 📦 Work Package 4: Testing & Validation
+## 📦 Work Package 4: Testing & Quality Validation
 
-### 4.1 Test with Known Working Sites
-- [ ] Test on sites that worked in `manual-debug.ts`
-- [ ] Validate cookie banner handling works consistently
-- [ ] Validate career page discovery works
-- [ ] Validate job extraction produces good data
+### 4.1 Comprehensive Quality Testing
+- [x] **Initial test run completed** - 58 jobs from 13 companies (100% success rate)
+- [ ] **Re-test with quality improvements** from WP 2.5 and 2.6
+- [ ] Validate career page detection accuracy improvements
+- [ ] Test individual job detail extraction functionality
+- [ ] Verify content validation filters work correctly
 
-### 4.2 Handle Edge Cases
+### 4.2 Data Quality Metrics Validation
+- [ ] **Target quality thresholds**:
+  - Jobs with valid descriptions: >90% (current: 69%)
+  - Jobs with locations: >80% (current: 34%)
+  - Jobs with job types: >85% (current: 31%)
+  - Jobs with language detection: >90% (current: 62%)
+  - Jobs with actionable URLs: >95% (current: 60%)
+  - Duplicate jobs: <5% (current: 10%)
+
+### 4.3 Edge Case Handling
 - [ ] Sites with no careers page
 - [ ] Sites with unusual cookie banners
 - [ ] Sites with no jobs posted
 - [ ] Sites that timeout or fail to load
+- [ ] Sites with complex job application systems
 
-### 4.3 Data Quality Validation
-- [ ] Ensure all required fields are populated
-- [ ] Validate job descriptions are meaningful
-- [ ] Check for duplicate jobs across all companies
-- [ ] Verify JSON output is valid and frontend-consumable
+### 4.4 Production Readiness Validation
+- [ ] Verify JSON output structure for frontend consumption
 - [ ] Test `/public/jobs.json` accessibility from browser
+- [ ] Validate all job URLs are clickable and functional
+- [ ] Ensure no "null" strings or empty required fields
+- [ ] Confirm deduplication logic works across companies
 
-**Estimated Time**: 2-3 hours  
-**Dependencies**: Work Package 3  
-**Deliverable**: Validated scraper ready for production use
+**Estimated Time**: 3-4 hours  
+**Dependencies**: Work Package 2.6, Work Package 3  
+**Deliverable**: Production-ready scraper with validated high-quality data
 
 ---
 
@@ -201,22 +327,28 @@ Addendum: Added support for extracting the language of the listing.
 |--------------|----------------|----------|--------|
 | WP1: Extract Patterns | 1-2 hours | High | Foundation |
 | WP2: Core Scraper | 3-4 hours | High | Working implementation |
+| **WP2.5: Career Page Detection** | **3-4 hours** | **High** | **Accurate career page discovery** |
+| **WP2.6: Job Detail Extraction** | **4-5 hours** | **High** | **Individual job page navigation** |
+| **WP2.7: Data Quality & Standardization** | **3-4 hours** | **High** | **Deduplication & validation** |
 | WP3: Static Output & Scheduling | 3-4 hours | High | Production capability |
-| WP4: Testing | 2-3 hours | High | Validation |
+| WP4: Testing & Quality Validation | 3-4 hours | High | Quality metrics validation |
 | WP5: Migration | 1-2 hours | Medium | Cleanup |
 
-**Total Estimated Time**: 10-15 hours (vs 23-32 hours in original FSD)  
-**Key Advantage**: Static JSON output, no database, scheduled via GitHub Actions
+**Total Estimated Time**: 21-29 hours (includes comprehensive quality improvements)  
+**Key Advantage**: High-quality data extraction with accurate career page detection
 
 ---
 
 ## ✅ Success Criteria
 
 ### Working Implementation
-- [ ] Handles cookie banners reliably (proven pattern from manual-debug.ts)
-- [ ] Finds career pages on diverse sites
-- [ ] Extracts job data in correct format
-- [ ] Outputs single `/public/jobs.json` file for frontend
+- [x] Handles cookie banners reliably (proven pattern from manual-debug.ts)
+- [x] Finds career pages on diverse sites (77% success rate)
+- [x] Extracts job data in correct format
+- [x] Outputs single `/public/jobs.json` file for frontend
+- [ ] **High-quality data extraction** (>90% valid descriptions, <5% duplicates)
+- [ ] **Individual job detail extraction** for complete information
+- [ ] **Content validation** to filter out generic/invalid data
 - [ ] Runs on schedule via GitHub Actions
 - [ ] Auto-commits updated JSON to trigger Vercel redeploy
 
