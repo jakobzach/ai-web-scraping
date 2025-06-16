@@ -91,13 +91,15 @@ public/
 - [x] Support both English and German terms
 - [x] Use observe->act pattern that actually works
 
+Addendum: Added support for extracting the language of the listing.
+
 ### 2.3 Smart Career Page Handling
-- [ ] **If CSV has careers URL**: Navigate directly to careers page
-- [ ] **If CSV missing careers URL**: Use discovery with Stagehand commands
+- [x] **If CSV has careers URL**: Navigate directly to careers page
+- [x] **If CSV missing careers URL**: Use discovery with Stagehand commands
   - Use multilingual navigation: "navigate to careers, jobs, karriere, stellenangebote"
   - Basic URL validation to confirm success
   - **Write discovered URL back to CSV** for future runs
-- [ ] No complex confidence scoring - just success/failure
+- [x] No complex confidence scoring - just success/failure
 
 ### 2.4 Job Extraction
 - [ ] Use Stagehand's `extract()` with simple schema

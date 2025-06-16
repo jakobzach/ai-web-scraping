@@ -47,7 +47,7 @@ export async function readCompaniesFromCSV(filePath: string): Promise<CompanyInp
  */
 export async function writeCompaniesCSV(filePath: string, companies: CompanyInput[]): Promise<void> {
   const csvContent = [
-    'Name,Website,Careers-URL',
+    'Name,Website,CareersPage',
     ...companies.map(c => `"${c.name}","${c.website}","${c.careers_url || ''}"`)
   ].join('\n');
   
@@ -68,6 +68,14 @@ export async function writeJobsJSON(filePath: string, jobs: JobListing[], metada
  */
 export function generateJobId(): string {
   return uuidv4();
+}
+
+/**
+ * Ensure URL has proper protocol (adds https:// if missing)
+ */
+export function ensureUrlProtocol(url: string): string {
+  if (!url) return url;
+  return url.startsWith('http') ? url : `https://${url}`;
 }
 
 /**

@@ -5,7 +5,7 @@ import { Stagehand } from "@browserbasehq/stagehand";
 import { z } from "zod";
 import dotenv from "dotenv";
 import { CompanyInput, JobListing, ScrapingMetadata } from './types.js';
-import { readCompaniesFromCSV, writeCompaniesCSV, writeJobsJSON, generateJobId, cleanJobData, isValidUrl } from './utils.js';
+import { readCompaniesFromCSV, writeCompaniesCSV, writeJobsJSON, generateJobId, cleanJobData, isValidUrl, ensureUrlProtocol } from './utils.js';
 
 dotenv.config();
 
@@ -66,12 +66,26 @@ export class SimpleScraper {
   }
 
   /**
-   * Navigate to careers page using proven pattern from manual-debug.ts
+   * Navigate to careers page - smart handling with CSV URL discovery
    */
-  private async navigateToCareers(): Promise<string | null> {
+  private async navigateToCareers(company: CompanyInput): Promise<{ url: string | null; discovered: boolean }> {
     const page = this.stagehand.page;
     
-    console.log("Navigating to careers page...");
+    // If CSV has careers URL, navigate directly
+    if (company.careers_url) {
+      console.log(`Using known careers URL: ${company.careers_url}`);
+      try {
+        await page.goto(company.careers_url);
+        await page.waitForTimeout(2000);
+        return { url: company.careers_url, discovered: false };
+      } catch (error) {
+        console.log(`Failed to navigate to known careers URL: ${error}`);
+        // Fall through to discovery method
+      }
+    }
+    
+    // Discovery method for unknown careers URLs
+    console.log("Discovering careers page...");
     
     const actions = await page.observe("Navigate to careers, jobs, karriere, stellenangebote, bewerbung, or arbeitsplätze page");
     
@@ -79,10 +93,19 @@ export class SimpleScraper {
       console.log("Found careers navigation via observe, acting...");
       await page.act(actions[0]!);
       await page.waitForTimeout(2000);
-      return page.url();
+      const discoveredUrl = page.url();
+      
+      // Basic URL validation to confirm success
+      if (discoveredUrl && discoveredUrl !== company.website && !discoveredUrl.includes('#')) {
+        console.log(`Successfully discovered careers URL: ${discoveredUrl}`);
+        return { url: discoveredUrl, discovered: true };
+      } else {
+        console.log("Navigation didn't lead to a valid careers page");
+        return { url: null, discovered: false };
+      }
     } else {
       console.log("No careers navigation found");
-      return null;
+      return { url: null, discovered: false };
     }
   }
 
@@ -105,7 +128,8 @@ export class SimpleScraper {
             description: z.string().describe("The complete job description, summary, or requirements text"),
             location: z.string().nullable().describe("The job location (city, country, 'Remote', etc.) or null if not specified"),
             type: z.string().nullable().describe("Employment type like 'Full-time', 'Part-time', 'Contract', 'Internship' or null if not specified"),
-            url: z.string().nullable().describe("The actual href URL from the apply/view job button or link")
+            url: z.string().nullable().describe("The actual href URL from the apply/view job button or link"),
+            languageOfListing: z.string().nullable().describe("The language of the job listing (e.g., 'en', 'de', 'fr') or null if not determinable")
           }))
         })
       });
@@ -126,6 +150,7 @@ export class SimpleScraper {
           // Only include optional fields if they have values (handling nullable)
           if (jobData.location && jobData.location.trim()) jobInput.location = jobData.location.trim();
           if (jobData.type && jobData.type.trim()) jobInput.type = jobData.type.trim();
+          if (jobData.languageOfListing && jobData.languageOfListing.trim()) jobInput.languageOfListing = jobData.languageOfListing.trim();
           
           // Handle URL with fallback to careers page
           const extractedUrl = jobData.url?.trim();
@@ -163,7 +188,8 @@ export class SimpleScraper {
                   description: z.string().describe("The complete job description, summary, or requirements text"),
                   location: z.string().nullable().describe("The job location (city, country, 'Remote', etc.) or null if not specified"),
                   type: z.string().nullable().describe("Employment type like 'Full-time', 'Part-time', 'Contract', 'Internship' or null if not specified"),
-                  url: z.string().nullable().describe("The actual href URL from the apply/view job button or link. This could be a web page URL or a PDF document URL. Extract the full URL, NOT button text like 'Apply now'")
+                  url: z.string().nullable().describe("The actual href URL from the apply/view job button or link. This could be a web page URL or a PDF document URL. Extract the full URL, NOT button text like 'Apply now'"),
+                  languageOfListing: z.string().nullable().describe("The language of the job listing (e.g., 'en', 'de', 'fr') or null if not determinable")
                 }))
             })
           });
@@ -181,6 +207,7 @@ export class SimpleScraper {
               // Only include optional fields if they have values (handling nullable)
               if (jobData.location && jobData.location.trim()) jobInput.location = jobData.location.trim();
               if (jobData.type && jobData.type.trim()) jobInput.type = jobData.type.trim();
+              if (jobData.languageOfListing && jobData.languageOfListing.trim()) jobInput.languageOfListing = jobData.languageOfListing.trim();
               
               // Handle URL with fallback to careers page
               const extractedUrl = jobData.url?.trim();
@@ -224,20 +251,26 @@ export class SimpleScraper {
       console.log(`\n=== Scraping ${company.name} ===`);
       console.log(`Website: ${company.website}`);
       
-      // Navigate to company website
-      await page.goto(company.website);
+      // Navigate to company website (ensure protocol)
+      await page.goto(ensureUrlProtocol(company.website));
       
       // Handle cookies using proven pattern
       await this.handleCookies();
       
-      // Navigate to careers page
-      const careersUrl = await this.navigateToCareers();
+      // Navigate to careers page (smart handling)
+      const careersResult = await this.navigateToCareers(company);
       
-      if (careersUrl) {
-        console.log(`Found careers page: ${careersUrl}`);
+      if (careersResult.url) {
+        console.log(`Found careers page: ${careersResult.url}`);
+        
+        // If we discovered a new careers URL, update the company object
+        if (careersResult.discovered) {
+          company.careers_url = careersResult.url;
+          console.log(`✅ Discovered and saved new careers URL for ${company.name}`);
+        }
         
         // Extract jobs using Stagehand's extract method
-        const extractedJobs = await this.extractJobs(company, careersUrl);
+        const extractedJobs = await this.extractJobs(company, careersResult.url);
         jobs.push(...extractedJobs);
         
       } else {
@@ -265,13 +298,20 @@ export class SimpleScraper {
     const allJobs: JobListing[] = [];
     let successful = 0;
     let failed = 0;
+    let newCareersUrlsDiscovered = 0;
     
     // Process each company
     for (const company of companies) {
       try {
+        const originalCareersUrl = company.careers_url;
         const jobs = await this.scrapeCompany(company);
         allJobs.push(...jobs);
         successful++;
+        
+        // Track new careers URL discoveries
+        if (!originalCareersUrl && company.careers_url) {
+          newCareersUrlsDiscovered++;
+        }
         
         // Rate limiting: 2-5 second delays between companies
         await new Promise(resolve => setTimeout(resolve, 3000));
@@ -280,6 +320,12 @@ export class SimpleScraper {
         console.error(`Failed to scrape ${company.name}:`, error);
         failed++;
       }
+    }
+    
+    // Write updated companies back to CSV if any new careers URLs were discovered
+    if (newCareersUrlsDiscovered > 0) {
+      console.log(`\n💾 Writing updated CSV with ${newCareersUrlsDiscovered} new careers URLs...`);
+      await writeCompaniesCSV(csvPath, companies);
     }
     
     // Create metadata
