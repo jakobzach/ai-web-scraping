@@ -18,12 +18,6 @@ async function testExtract() {
   await page.waitForTimeout(1000);
   await scraper.handleCookies();
   await page.waitForTimeout(1000);
-  const extractedData = await page.extract({
-    instruction: "Extract the URL of the job listings page.",
-    schema: JobListingsURLSchema
-  });
-
-  console.log(extractedData);
 
   console.log("Extracting via hrefs:");
 
@@ -34,7 +28,7 @@ async function testExtract() {
   const uniqueHrefs = hrefs.filter((href, index, self) => 
     self.indexOf(href) === index
   );
-  
+
   console.log(uniqueHrefs.filter(href => href.includes("stellenangebote")));
 
   await scraper.close();

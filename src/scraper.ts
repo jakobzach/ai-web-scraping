@@ -87,7 +87,86 @@ export class SimpleScraper {
     
     // Discovery method for unknown careers URLs
     console.log("Discovering careers page...");
-    
+
+    console.log("Extracting hrefs...");
+
+    // href extraction approach for job listings page discovery
+    const hrefs = await page.$$eval('a', links => 
+      links.map(link => link.href).filter(href => href)
+    );
+
+    const uniqueHrefs = hrefs.filter((href, index, self) => 
+      self.indexOf(href) === index
+    );
+
+    const jobListingsHrefs = uniqueHrefs.filter(href => href.includes("stellen"));
+    console.log("Job listings hrefs:", jobListingsHrefs);
+
+    const careersHrefs = uniqueHrefs.filter(href => href.includes("karriere") || href.includes("jobs") || href.includes("career"));
+    console.log("Careers hrefs:", careersHrefs);
+
+    // Choose best href with priority: stellenangebote > karriere/jobs/careers
+    let bestHref = null;
+    if (jobListingsHrefs.length > 0) {
+      bestHref = jobListingsHrefs[0];
+      console.log(`Selected job listings href: ${bestHref}`);
+    } else if (careersHrefs.length > 0) {
+      bestHref = careersHrefs[0];
+      console.log(`Selected careers href: ${bestHref}`);
+    }
+
+    // Try href approach first
+    if (bestHref) {
+      try {
+        console.log(`Navigating to discovered href: ${bestHref}`);
+        await page.goto(bestHref);
+        await page.waitForTimeout(1000);
+        const discoveredUrl = page.url();
+        
+        // Check for external career systems first
+        const externalResult = await this.detectExternalCareerSystem(discoveredUrl, company);
+        if (externalResult) {
+          return externalResult;
+        }
+        
+        // Validate discovered URL
+        const validation = await this.validateCareersPage(discoveredUrl, company.website);
+        
+        if (validation.confidence === 'high') {
+          console.log(`Href approach successful with high confidence: ${discoveredUrl}`);
+          return { 
+            url: discoveredUrl, 
+            discovered: true,
+            confidence: validation.confidence,
+            validationNotes: validation.notes
+          };
+        } else if (validation.confidence === 'medium') {
+          console.log(`Href approach found medium confidence page, trying deeper navigation...`);
+          const deeperResult = await this.handleNestedCareersStructure(discoveredUrl, company);
+          if (deeperResult) {
+            return deeperResult;
+          }
+          
+          // If deeper navigation fails, return the medium confidence result
+          return { 
+            url: discoveredUrl, 
+            discovered: true,
+            confidence: validation.confidence,
+            validationNotes: validation.notes
+          };
+        } else {
+          console.log(`Href approach failed validation: ${validation.notes.join(', ')}`);
+          console.log("Falling back to page.observe approach...");
+        }
+        
+      } catch (error) {
+        console.log(`Href navigation failed: ${error}, falling back to page.observe approach...`);
+      }
+    } else {
+      console.log("No suitable hrefs found, using page.observe approach...");
+    }
+
+    // Fallback to page.observe approach if href approach didn't work 
     const actions = await page.observe("Gehe zur Seite für Stellenangebote, Bewerbung, Karriere,Arbeitsplätze, Careers, Jobs. Der Link zu der Seite kann auch ein Unterpunkt in einem Menü sein.");
     console.log("Observed the following Actions:", JSON.stringify(actions, null, 2));
 
@@ -483,7 +562,7 @@ export class SimpleScraper {
       
       // Handle cookies using proven pattern
       await this.handleCookies();
-      
+
       // Navigate to careers page (smart handling)
       const careersResult = await this.navigateToJobListings(company);
       

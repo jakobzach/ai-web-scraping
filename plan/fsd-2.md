@@ -138,8 +138,8 @@ Addendum: Added support for extracting the language of the listing.
 **Test Validation**: `/data/input/test-target.csv` contains ground truth careers URLs
 
 ### 2.5.1 Enhanced Career Page Detection
-- [ ] **Improve career page detection accuracy**
-  - Add validation to detect when we've landed on wrong pages (News, About, etc.)
+- [x] **Improve career page detection accuracy**
+  - Use href extraction with smart filtering as the primary option to find the job listing URLs. Stagehand approach as fallback. 
   - If the careers page URL is the same as the website URL, we definitely didn't find the careers page
   - Look for career-specific indicators: job titles, application forms, "Apply" buttons
   - Add fallback retry with different navigation terms if first attempt fails
@@ -152,14 +152,14 @@ Addendum: Added support for extracting the language of the listing.
   - Validate we've reached the page with individual job listings
 
 ### 2.5.3 Career Page Detection Test
-- [ ] **Create dedicated test for career page detection**
+- [x] **Create dedicated test for career page detection**
   - For every test, create a new copy of test-websites.csv with the timestamp as a prefix so we can review old tests
   - Validate test results against `test-target.csv` ground truth data
   - Compare discovered URLs with known correct careers URLs
   - Measure accuracy: exact matches, domain matches, functional equivalents
 
 ### 2.5.4 Career Page Validation Logic
-- [ ] **Implement robust validation**
+- [x] **Implement robust validation**
   - Check for career-specific content indicators
   - Validate page contains job listings or job-related content
   - Reject pages that are clearly not careers-related
@@ -171,6 +171,9 @@ Addendum: Added support for extracting the language of the listing.
 ---
 
 ## 📦 Work Package 2.6: Individual Job Detail Extraction
+
+### 2.6.1 Separate existing srapeAll() code into scrapeAllJobListingURLs() and scrapeAllJobDetails()
+...
 
 ### 2.6.1 Job Detail Page Navigation
 - [ ] **Implement job detail page navigation**
