@@ -9,7 +9,7 @@ const StagehandConfig = {
     apiKey: process.env.OPENAI_API_KEY,
   },
   localBrowserLaunchOptions: {
-    headless: false, // Launches the browser in headless mode.
+    headless: true, // Launches the browser in headless mode.
     args: [
         '--lang=de-DE',
         '--accept-lang=de-DE,de;q=0.9,en;q=0.8',

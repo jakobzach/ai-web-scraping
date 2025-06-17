@@ -21,8 +21,8 @@ async function testScraper() {
     const csvPath = 'data/input/test-websites.csv';
     console.log(`📁 Using CSV file: ${csvPath}`);
     
-    // Run the scraper on all test companies
-    await scraper.scrapeAll(csvPath);
+    // Run the full pipeline on all test companies
+    await scraper.runFullPipeline(csvPath);
     
     console.log('\n🎉 Test completed successfully!');
     console.log('📄 Check public/jobs.json for results');

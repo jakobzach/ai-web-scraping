@@ -71,11 +71,17 @@ export function generateJobId(): string {
 }
 
 /**
- * Ensure URL has proper protocol (adds https:// if missing)
+ * Ensure URL has proper protocol (guarantees https://)
  */
 export function ensureUrlProtocol(url: string): string {
   if (!url) return url;
-  return url.startsWith('http') ? url : `https://${url}`;
+  
+  // Convert http:// to https:// or add https:// if no protocol
+  if (url.startsWith('http://')) {
+    return url.replace('http://', 'https://');
+  }
+  
+  return url.startsWith('https://') ? url : `https://${url}`;
 }
 
 /**

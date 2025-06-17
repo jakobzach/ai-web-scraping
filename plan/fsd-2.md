@@ -182,7 +182,7 @@ Addendum: Added support for extracting the language of the listing.
   - Update CSV with newly discovered careers URLs for future runs
   - Focus purely on populating the careers_url column across all companies
 
-- [ ] **Create `scrapeAllJobDetails(csvPath: string)` method**
+- [x] **Create `scrapeAllJobDetails(csvPath: string)` method**
   - Read companies from CSV file (now with careers URLs populated from phase 1)
   - For each company with a careers_url: navigate directly to that careers page
   - Run **job extraction logic** from `extractJobs()` method
@@ -191,15 +191,30 @@ Addendum: Added support for extracting the language of the listing.
   - Output final `jobs.json` with detailed job data
   - This phase can run independently after careers URL discovery is complete
 
-- [ ] **Benefits of separation**:
-  - **Fast careers page discovery** across all companies without job extraction overhead
-  - **Validate careers URL quality** and coverage before committing to job extraction
-  - **Resume job extraction** independently if it fails partway through
-  - **CSV becomes complete** with all careers URLs discovered and validated
-  - **Different rate limiting** for URL discovery vs job extraction phases
-  - **Leverages all WP 2.5 improvements** in career page detection accuracy
+### 2.6.2 Create file to run scrapeAllCareersURLs() for ad hoc use
+- [x] **Create `discover-careers-urls.ts` script**
+  - Simple command-line script to run careers URL discovery on any CSV file
+  - Takes CSV path as command line argument (defaults to `data/input/companies.csv`)
+  - Shows basic stats: total companies, companies needing URLs, companies with existing URLs
+  - Uses existing `scrapeAllCareersURLs()` method without testing overhead
+  - Updates the actual CSV file (no temporary/test files)
 
-### 2.6.2 Job Detail Page Navigation
+- [x] **Add progress information and stats**
+  - Display CSV file being processed and company counts
+  - Show time taken for discovery process
+  - Clear success/failure messaging with next steps
+  - Lightweight console output (no complex reporting)
+
+- [x] **Command line interface**
+  ```bash
+  # Use default CSV
+  npx tsx discover-careers-urls.ts
+  
+  # Use specific CSV  
+  npx tsx discover-careers-urls.ts data/input/test-websites.csv
+  ```
+
+### 2.6.3 Job Detail Page Navigation
 - [ ] **Implement job detail page navigation**
   - After finding careers page, identify individual job listing links
   - Click into individual job postings to get complete information

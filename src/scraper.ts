@@ -28,7 +28,42 @@ export class SimpleScraper {
     return this.stagehand.page;
   }
 
-
+  /**
+   * Reset browser state between companies to prevent navigation interference
+   */
+  private async resetBrowserState(): Promise<void> {
+    try {
+      console.log("🔄 Resetting browser state...");
+      const page = this.stagehand.page;
+      
+      // Clear all browsing data
+      const client = await page.context().newCDPSession(page);
+      await client.send('Storage.clearDataForOrigin', {
+        origin: '*',
+        storageTypes: 'all'
+      });
+      
+      // Clear cookies, cache, and local storage
+      await page.context().clearCookies();
+      await page.evaluate(() => {
+        // Clear local storage and session storage
+        if (typeof localStorage !== 'undefined') {
+          localStorage.clear();
+        }
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.clear();
+        }
+      });
+      
+      // Navigate to blank page to reset state
+      await page.goto('about:blank');
+      await page.waitForTimeout(1000);
+      
+      console.log("✅ Browser state reset complete");
+    } catch (error) {
+      console.log("⚠️ Browser reset failed, continuing anyway:", error);
+    }
+  }
 
   /**
    * Handle cookie banners using proven observe→act pattern
@@ -90,17 +125,43 @@ export class SimpleScraper {
 
     // href extraction approach for job listings page discovery
     const hrefs = await page.$$eval('a', links => 
-      links.map(link => link.href).filter(href => href)
+      links.map(link => link.href).filter(href => href && typeof href === 'string')
     );
 
     const uniqueHrefs = hrefs.filter((href, index, self) => 
       self.indexOf(href) === index
     );
 
-    const jobListingsHrefs = uniqueHrefs.filter(href => href.includes("stellen"));
+    // Filter for job-specific URLs with more precision
+    const jobListingsHrefs = uniqueHrefs.filter(href => {
+      // Ensure href is a string before calling toLowerCase
+      if (typeof href !== 'string') return false;
+      const url = href.toLowerCase();
+      
+      // Look for specific job-related terms with "stellen"
+      return url.includes('stellenangebote') || 
+             url.includes('stellenausschreibung') ||
+             url.includes('offene-stellen') ||
+             url.includes('aktuelle-stellen') ||
+             url.includes('/stellen/') ||
+             url.includes('/stellen?') ||
+             url.endsWith('/stellen');
+    });
     console.log("Job listings hrefs:", jobListingsHrefs);
 
-    const careersHrefs = uniqueHrefs.filter(href => href.includes("karriere") || href.includes("jobs") || href.includes("career"));
+    const careersHrefs = uniqueHrefs.filter(href => {
+      // Ensure href is a string before calling toLowerCase
+      if (typeof href !== 'string') return false;
+      const url = href.toLowerCase();
+      
+      // Exclude non-career URLs
+      const excludeTerms = ['news', 'presse', 'blog', 'media'];
+      if (excludeTerms.some(term => url.includes(term))) {
+        return false;
+      }
+      
+      return url.includes("karriere") || url.includes("jobs") || url.includes("career");
+    });
     console.log("Careers hrefs:", careersHrefs);
 
     // Choose best href with priority: stellenangebote > karriere/jobs/careers
@@ -664,6 +725,9 @@ export class SimpleScraper {
         console.error(`❌ Failed to discover careers URL for ${company.name}:`, error);
         failed++;
       }
+      
+      // Reset browser state between companies to prevent navigation interference
+      await this.resetBrowserState();
     }
     
     // Write updated companies back to CSV with new careers URLs
@@ -732,6 +796,9 @@ export class SimpleScraper {
         console.error(`❌ Failed to extract jobs from ${company.name}:`, error);
         failed++;
       }
+      
+      // Reset browser state between companies to prevent navigation interference
+      await this.resetBrowserState();
     }
     
     // Create metadata
