@@ -46,7 +46,7 @@ async function testCareerPageDetection() {
   let failures = 0;
 
   // Process companies using production scraper in test mode
-  const testResults = await scraper.scrapeAll(testCsvPath);
+  await scraper.scrapeAll(testCsvPath);
   
   // Read the updated CSV to get discovered URLs
   const updatedCompanies = await readCompaniesFromCSV(testCsvPath);

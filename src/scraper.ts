@@ -35,7 +35,7 @@ export class SimpleScraper {
   /**
    * Handle cookie banners using proven observe→act pattern
    */
-  private async handleCookies(): Promise<void> {
+  async handleCookies(): Promise<void> {
     const page = this.stagehand.page;
     
     console.log("Waiting for page load...");
@@ -64,7 +64,7 @@ export class SimpleScraper {
   /**
    * Navigate to careers page - smart handling with CSV URL discovery and validation
    */
-  private async navigateToCareers(company: CompanyInput): Promise<{ 
+  private async navigateToJobListings(company: CompanyInput): Promise<{ 
     url: string | null; 
     discovered: boolean; 
     confidence: 'high' | 'medium' | 'low';
@@ -74,13 +74,13 @@ export class SimpleScraper {
     
     // If CSV has careers URL, navigate directly
     if (company.careers_url) {
-      console.log(`Using known careers URL: ${company.careers_url}`);
+      console.log(`Using known job listings URL: ${company.careers_url}`);
       try {
         await page.goto(company.careers_url);
         await page.waitForTimeout(1000);
         
       } catch (error) {
-        console.log(`Failed to navigate to known careers URL: ${error}`);
+        console.log(`Failed to navigate to known job listings URL: ${error}`);
         // Fall through to discovery method
       }
     }
@@ -88,19 +88,42 @@ export class SimpleScraper {
     // Discovery method for unknown careers URLs
     console.log("Discovering careers page...");
     
-    const actions = await page.observe("Finde die Seite für Karriere/ Stellenangebote/ Bewerbung/ Arbeitsplätze/ Careers/ Jobs");
-    
+    const actions = await page.observe("Gehe zur Seite für Stellenangebote, Bewerbung, Karriere,Arbeitsplätze, Careers, Jobs. Der Link zu der Seite kann auch ein Unterpunkt in einem Menü sein.");
+    console.log("Observed the following Actions:", JSON.stringify(actions, null, 2));
+
     if (actions && actions.length > 0) {
-      console.log("Found careers navigation via observe, acting...");
-      await page.act(actions[0]!);
-      await page.waitForTimeout(2000);
+             console.log("Selected best action:", actions[0]);
+       
+       await page.act(actions[0]!);
+      await page.waitForTimeout(1000);
       const discoveredUrl = page.url();
+      
+      // Check for external career systems first
+      const externalResult = await this.detectExternalCareerSystem(discoveredUrl, company);
+      if (externalResult) {
+        return externalResult;
+      }
       
       // Validate discovered URL
       const validation = await this.validateCareersPage(discoveredUrl, company.website);
       
-      if (validation.confidence !== 'low') {
+      if (validation.confidence === 'high') {
         console.log(`Successfully discovered careers URL: ${discoveredUrl} (confidence: ${validation.confidence})`);
+        return { 
+          url: discoveredUrl, 
+          discovered: true,
+          confidence: validation.confidence,
+          validationNotes: validation.notes
+        };
+      } else if (validation.confidence === 'medium') {
+        console.log(`Medium confidence careers page found, trying deeper navigation...`);
+        // Try to navigate deeper for better results
+        const deeperResult = await this.handleNestedCareersStructure(discoveredUrl, company);
+        if (deeperResult) {
+          return deeperResult;
+        }
+        
+        // If deeper navigation fails, return the medium confidence result
         return { 
           url: discoveredUrl, 
           discovered: true,
@@ -109,12 +132,8 @@ export class SimpleScraper {
         };
       } else {
         console.log(`Navigation failed validation: ${validation.notes.join(', ')}`);
-        
-        // Try fallback navigation with different terms
-        const fallbackResult = await this.tryFallbackNavigation(company);
-        if (fallbackResult) {
-          return fallbackResult;
-        }
+        console.log("Current URL:", page.url());
+      
         
         return { 
           url: null, 
@@ -135,95 +154,9 @@ export class SimpleScraper {
   }
 
   /**
-   * Validate if a page is actually a careers page with hardcoded validation logic
+   * Handle nested career page structures - navigate deeper to find actual job listings
    */
-  private async validateCareersPage(url: string, websiteUrl: string): Promise<{
-    confidence: 'high' | 'medium' | 'low';
-    notes: string[];
-  }> {
-    const page = this.stagehand.page;
-    const notes: string[] = [];
-    let confidence: 'high' | 'medium' | 'low' = 'medium';
-    
-    // Critical failure: URL is same as website URL
-    const normalizedUrl = url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
-    const normalizedWebsite = websiteUrl.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
-    
-    if (normalizedUrl === normalizedWebsite) {
-      notes.push('URL is same as website homepage - definitely not careers page');
-      return { confidence: 'low', notes };
-    }
-    
-    try {
-      // Extract page content for validation
-      const PageValidationSchema = z.object({
-        title: z.string().describe("Page title"),
-        headings: z.array(z.string()).describe("Main headings on the page"),
-        hasJobListings: z.boolean().describe("Whether there are visible job listings"),
-        hasApplicationForms: z.boolean().describe("Whether there are job application forms"),
-        content: z.string().describe("General page content")
-      });
-      
-      const pageContent = await page.extract({
-        instruction: "Extract the page title, main headings, and any job-related content visible on this page.",
-        schema: PageValidationSchema
-      });
-      
-      const content = pageContent as any;
-      const allText = `${content.title || ''} ${content.headings?.join(' ') || ''} ${content.content || ''}`.toLowerCase();
-      
-      // Positive indicators (increase confidence)
-      const careerKeywords = ['jobs', 'stellenangebote', 'positionen', 'bewerbung'];
-      const foundCareerKeywords = careerKeywords.filter(keyword => allText.includes(keyword));
-      
-      if (foundCareerKeywords.length >= 2) {
-        notes.push(`Found career keywords: ${foundCareerKeywords.join(', ')}`);
-        confidence = 'high';
-      } else if (foundCareerKeywords.length === 1) {
-        notes.push(`Found career keyword: ${foundCareerKeywords[0]}`);
-        confidence = 'medium';
-      }
-      
-      // Check for job listings or application forms
-      if (content.hasJobListings) {
-        notes.push('Page contains visible job listings');
-        confidence = 'high';
-      }
-      
-      if (content.hasApplicationForms) {
-        notes.push('Page contains job application forms');
-        confidence = 'high';
-      }
-      
-      // Negative indicators (decrease confidence)
-      const negativeKeywords = ['news', 'about', 'contact', 'product', 'service', 'über uns'];
-      const foundNegativeKeywords = negativeKeywords.filter(keyword => allText.includes(keyword));
-      
-      if (foundNegativeKeywords.length > 0) {
-        notes.push(`Found non-career indicators: ${foundNegativeKeywords.join(', ')}`);
-        if (confidence === 'high') confidence = 'medium';
-        else if (confidence === 'medium') confidence = 'low';
-      }
-      
-      // Generic titles are bad signs
-      const genericTitles = ['jobs', 'willkommen im team', 'company news', 'about us'];
-      if (genericTitles.some(title => allText.includes(title))) {
-        notes.push('Page has generic title - likely wrong page');
-        confidence = 'low';
-      }
-      
-    } catch (error) {
-      notes.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      confidence = 'low';
-    }
-    
-    return { confidence, notes };
-  }
-
-  /**
-   * Try fallback navigation with different terms
-   */
-  private async tryFallbackNavigation(company: CompanyInput): Promise<{
+  private async handleNestedCareersStructure(currentUrl: string, company: CompanyInput): Promise<{
     url: string | null; 
     discovered: boolean; 
     confidence: 'high' | 'medium' | 'low';
@@ -231,42 +164,206 @@ export class SimpleScraper {
   } | null> {
     const page = this.stagehand.page;
     
-    console.log("Trying fallback navigation terms...");
+    console.log(`Trying deeper navigation from: ${currentUrl}`);
     
-    const fallbackTerms = [
-      "Navigiere zu 'Stellenangebote' oder 'Jobs'",
-      "Navigiere zu 'Offene Stellen' oder 'Unsere Stellen'", 
-      "Navigiere zu 'Arbeiten bei uns' oder 'Work with us'",
-    ];
+    const actions = await page.observe("Finde die Seite für 'Stellenangebote', 'Offene Stellen', 'Alle Stellen', 'Aktuelle Stellen', 'Vakanz', 'Alle Jobs', 'Jobs anzeigen' oder 'Bewerbung'");
+    console.log("Observed the following Actions:", JSON.stringify(actions, null, 2));
     
-    for (const term of fallbackTerms) {
-      try {
-        const actions = await page.observe(term);
-        if (actions && actions.length > 0) {
-          console.log(`Found fallback navigation with: ${term}`);
-          await page.act(actions[0]!);
-          await page.waitForTimeout(1000);
-          
-          const discoveredUrl = page.url();
-          const validation = await this.validateCareersPage(discoveredUrl, company.website);
-          
-          if (validation.confidence !== 'low') {
-            console.log(`Fallback navigation successful: ${discoveredUrl}`);
-            return {
-              url: discoveredUrl,
-              discovered: true,
-              confidence: validation.confidence,
-              validationNotes: [`Fallback navigation with: ${term}`, ...validation.notes]
-            };
-          }
-        }
-      } catch (error) {
-        console.log(`Fallback term failed: ${term}`);
+    if (actions && actions.length > 0) {
+      await page.act(actions[0]!);
+      await page.waitForTimeout(2000);
+      
+      const deeperUrl = page.url();
+      
+      // Don't navigate to the same page
+      if (deeperUrl === currentUrl) {
+        console.log(`Deeper navigation stayed on same page...`);
+        return {
+          url: currentUrl,
+          discovered: true,
+          confidence: 'medium',
+          validationNotes: ['Deeper navigation stayed on same page']
+        };
+      }
+      
+      console.log(`Navigated deeper to: ${deeperUrl}`);
+      
+      // Validate the deeper page
+      const validation = await this.validateCareersPage(deeperUrl, company.website);
+      
+      if (validation.confidence === 'high') {
+        console.log(`Deeper navigation successful with high confidence: ${deeperUrl}`);
+        return {
+          url: deeperUrl,
+          discovered: true,
+          confidence: validation.confidence,
+          validationNotes: validation.notes
+        };
+      } else if (validation.confidence === 'medium') {
+        console.log(`Deeper navigation found medium confidence page: ${deeperUrl}`);
+        return {
+          url: deeperUrl,
+          discovered: true,
+          confidence: validation.confidence,
+          validationNotes: validation.notes
+        };
       }
     }
     
+    console.log(`No successful deeper navigation found from ${currentUrl}`);
     return null;
   }
+
+  /**
+   * Detect external career systems (Workday, BambooHR, etc.) and handle appropriately
+   */
+  private async detectExternalCareerSystem(url: string, company: CompanyInput): Promise<{
+    url: string | null; 
+    discovered: boolean; 
+    confidence: 'high' | 'medium' | 'low';
+    validationNotes: string[];
+  } | null> {
+    const page = this.stagehand.page;
+    
+    // Known external career system domains
+    const externalSystems = [
+      'workday.com',
+      'workdayjobs.com', 
+      'myworkdayjobs.com',
+      'bamboohr.com',
+      'lever.co',
+      'greenhouse.io',
+      'smartrecruiters.com',
+      'jobvite.com',
+      'icims.com',
+      'taleo.net',
+      'successfactors.com'
+    ];
+    
+    const isExternalSystem = externalSystems.some(domain => url.includes(domain));
+    
+    if (isExternalSystem) {
+      console.log(`Detected external career system: ${url}`);
+      
+      try {
+        // Wait for external system to load
+        await page.waitForTimeout(2000);
+        
+        // Handle cookies using the existing method
+        await this.handleCookies();
+        
+        // Validate the external system using the same method as regular career pages
+        const validation = await this.validateCareersPage(url, company.website);
+        
+        console.log(`External career system validation: ${validation.confidence} confidence`);
+        return {
+          url: url,
+          discovered: true,
+          confidence: validation.confidence,
+          validationNotes: ['External career system detected', ...validation.notes]
+        };
+        
+      } catch (error) {
+        console.log(`Error handling external career system: ${error}`);
+        return {
+          url: url,
+          discovered: true,
+          confidence: 'low',
+          validationNotes: ['External career system detected', `Error: ${error instanceof Error ? error.message : 'Unknown error'}`]
+        };
+      }
+    }
+    
+    // Skip complex external link extraction - too unreliable
+    console.log("Skipping external link detection for simplicity");
+    
+    return null;
+  }
+
+
+
+
+
+  /**
+   * Validate if a page is actually a careers page with hardcoded validation logic
+   */
+  private async validateCareersPage(url: string, websiteUrl: string): Promise<{
+    confidence: 'high' | 'medium' | 'low';
+    notes: string[];
+    linkToJobListings: string | null;
+  }> {
+    const page = this.stagehand.page;
+    const notes: string[] = [];
+    let confidence: 'high' | 'medium' | 'low' = 'medium';
+    let linkToJobListings: string | null = null;
+    
+    // Critical failure: URL is same as website URL
+    const normalizedUrl = url.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+    const normalizedWebsite = websiteUrl.toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+    
+    if (normalizedUrl === normalizedWebsite) {
+      notes.push('URL is same as website homepage - definitely not careers page');
+      return { confidence: 'low', notes, linkToJobListings: null };
+    }
+    
+    try { // Extract page content for validation
+      const PageValidationSchema = z.object({
+        hasJobListings: z.boolean().describe("Whether there are visible job listings"),
+        hasLinksToJobListings: z.boolean().describe("Whether there are links to a job listings page"),
+        linkToJobListingOverview: z.string().url().nullable().describe("The link to the page that contains the job listings"),
+      });
+      
+      const validation = await page.extract({
+        instruction: "Check if this page has job listings or links to a job listings page.",
+        schema: PageValidationSchema
+      });
+      
+      console.log(`Page validation: ${JSON.stringify(validation, null, 2)}`);
+      
+      // Implement validation logic based on existence of a link to a job listings page
+      if (validation.hasLinksToJobListings) {
+        notes.push('Page has links to job listings');
+        confidence = 'medium';
+      } else if (validation.hasJobListings) {
+        notes.push('Page contains visible job listings');
+        confidence = 'high';
+      } else {
+        notes.push('No job listings or links to job listings found');
+        confidence = 'low';
+      }
+      
+      // Add URL-based validation as backup
+      const urlLower = url.toLowerCase();
+      const hasCareerKeywords = ['job', 'career', 'karriere', 'bewerbung'].some(keyword => 
+        urlLower.includes(keyword)
+      );
+      const hasStellenangeboteKeywords = ['stellenangebot', 'stellen'].some(keyword => 
+        urlLower.includes(keyword)
+      );
+
+      if (validation.linkToJobListingOverview) {
+        linkToJobListings = validation.linkToJobListingOverview;
+      }
+      
+      if (hasStellenangeboteKeywords) {
+        notes.push('URL contains stellenangebote-related keywords');
+        confidence = 'high';
+      }else if (hasCareerKeywords) {
+        notes.push('URL contains career-related keywords');
+        // Don't downgrade high confidence, but can upgrade low to medium
+        if (confidence === 'low') {
+          confidence = 'medium';
+        }
+      }
+      
+    } catch (error) {
+      notes.push(`Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      confidence = 'low';
+    }
+    
+    return { confidence, notes, linkToJobListings };
+  }
+
 
   /**
    * Process raw job data from extraction into JobListing format
@@ -388,7 +485,7 @@ export class SimpleScraper {
       await this.handleCookies();
       
       // Navigate to careers page (smart handling)
-      const careersResult = await this.navigateToCareers(company);
+      const careersResult = await this.navigateToJobListings(company);
       
       if (careersResult.url) {
         console.log(`Found careers page: ${careersResult.url} (confidence: ${careersResult.confidence})`);

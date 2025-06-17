@@ -40,7 +40,7 @@ const jobFieldDefinitions = {
   description: z.string().describe("The complete job description, summary, or requirements text"),
   location: z.string().describe("The job location (city, country, 'Remote', etc.) or null if not specified"),
   type: z.nativeEnum(JobType).describe("Employment type from predefined options"),
-  url: z.string().describe("The actual href URL from the apply/view job button or link"),
+  url: z.string().url().describe("The actual href URL from the apply/view job button or link"),
   languageOfListing: z.nativeEnum(LanguageOfListing).describe("The language of the job listing using ISO language codes")
 } as const;
 
