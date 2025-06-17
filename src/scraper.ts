@@ -10,11 +10,9 @@ import { readCompaniesFromCSV, writeCompaniesCSV, writeJobsJSON, generateJobId, 
 export class SimpleScraper {
   private stagehand: Stagehand;
   private runId: string;
-  private testMode: 'full' | 'career-detection-only';
 
-  constructor(testMode: 'full' | 'career-detection-only' = 'full') {
+  constructor() {
     this.runId = generateJobId();
-    this.testMode = testMode;
     this.stagehand = new Stagehand(StagehandConfig); // Use centralized Stagehand configuration with German language support
   }
 
@@ -576,12 +574,6 @@ export class SimpleScraper {
           console.log(`✅ Discovered and saved new careers URL for ${company.name}`);
         }
         
-        // If in test mode, stop here and return empty jobs array
-        if (this.testMode === 'career-detection-only') {
-          console.log(`Test mode: Stopping after career page detection`);
-          return jobs;
-        }
-        
         // Extract jobs using Stagehand's extract method
         const extractedJobs = await this.extractJobs(company, careersResult.url);
         jobs.push(...extractedJobs);
@@ -600,15 +592,29 @@ export class SimpleScraper {
   /**
    * Process all companies from CSV
    */
-  async scrapeAll(csvPath: string): Promise<void> {
+  async runFullPipeline(csvPath: string): Promise<void> {
+    console.log(`Starting full scrape pipeline...`);
+    
+    // Phase 1: Discover careers URLs
+    await this.scrapeAllCareersURLs(csvPath);
+    
+    // Phase 2: Extract job details
+    await this.scrapeAllJobDetails(csvPath);
+  }
+
+  /**
+   * Discover careers page URLs for all companies and write back to CSV
+   * This method focuses purely on careers page discovery without job extraction
+   */
+  async scrapeAllCareersURLs(csvPath: string): Promise<void> {
     const startTime = new Date().toISOString();
-    console.log(`Starting scrape run ${this.runId} at ${startTime}`);
+    console.log(`\n=== Careers URL Discovery ===`);
+    console.log(`Starting careers URL discovery run ${this.runId} at ${startTime}`);
     
     // Read companies from CSV
     const companies = await readCompaniesFromCSV(csvPath);
     console.log(`Loaded ${companies.length} companies from CSV`);
     
-    const allJobs: JobListing[] = [];
     let successful = 0;
     let failed = 0;
     let newCareersUrlsDiscovered = 0;
@@ -616,29 +622,116 @@ export class SimpleScraper {
     // Process each company
     for (const company of companies) {
       try {
-        const originalCareersUrl = company.careers_url;
-        const jobs = await this.scrapeCompany(company);
-        allJobs.push(...jobs);
-        successful++;
+        console.log(`\n=== Discovering careers URL for ${company.name} ===`);
+        console.log(`Website: ${company.website}`);
         
-        // Track new careers URL discoveries
-        if (!originalCareersUrl && company.careers_url) {
-          newCareersUrlsDiscovered++;
+        const originalCareersUrl = company.careers_url;
+        
+        // Skip if we already have a careers URL
+        if (originalCareersUrl) {
+          console.log(`✅ Already have careers URL: ${originalCareersUrl}`);
+          successful++;
+          continue;
         }
         
-        // Rate limiting: 2-5 second delays between companies
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Navigate to company website
+        const page = this.stagehand.page;
+        await page.goto(ensureUrlProtocol(company.website));
+        
+        // Handle cookies using proven pattern
+        await this.handleCookies();
+
+        // Navigate to careers page (smart handling) - this is the core logic from WP 2.5
+        const careersResult = await this.navigateToJobListings(company);
+        
+        if (careersResult.url && careersResult.discovered) {
+          console.log(`✅ Discovered careers URL: ${careersResult.url} (confidence: ${careersResult.confidence})`);
+          console.log(`Validation notes: ${careersResult.validationNotes.join(', ')}`);
+          
+          // Update the company object with discovered URL
+          company.careers_url = careersResult.url;
+          newCareersUrlsDiscovered++;
+          successful++;
+        } else {
+          console.log(`❌ Could not discover careers URL. Notes: ${careersResult.validationNotes.join(', ')}`);
+          failed++;
+        }
+        
+        // Rate limiting between companies
+        await new Promise(resolve => setTimeout(resolve, 500));
         
       } catch (error) {
-        console.error(`Failed to scrape ${company.name}:`, error);
+        console.error(`❌ Failed to discover careers URL for ${company.name}:`, error);
         failed++;
       }
     }
     
-    // Write updated companies back to CSV if any new careers URLs were discovered
+    // Write updated companies back to CSV with new careers URLs
     if (newCareersUrlsDiscovered > 0) {
       console.log(`\n💾 Writing updated CSV with ${newCareersUrlsDiscovered} new careers URLs...`);
       await writeCompaniesCSV(csvPath, companies);
+    }
+    
+    console.log(`\n=== Careers URL Discovery Complete ===`);
+    console.log(`Companies processed: ${companies.length}`);
+    console.log(`Careers URLs discovered: ${newCareersUrlsDiscovered}`);
+    console.log(`Companies successful: ${successful}`);
+    console.log(`Companies failed: ${failed}`);
+  }
+
+  /**
+   * Extract job details from companies with known careers URLs
+   * This method focuses purely on job extraction from discovered careers pages
+   */
+  async scrapeAllJobDetails(csvPath: string): Promise<void> {
+    const startTime = new Date().toISOString();
+    console.log(`\n=== Job Details Extraction ===`);
+    console.log(`Starting job details extraction run ${this.runId} at ${startTime}`);
+    
+    // Read companies from CSV (now with careers URLs populated from Phase 1)
+    const companies = await readCompaniesFromCSV(csvPath);
+    const companiesWithCareersUrls = companies.filter(c => c.careers_url);
+    
+    console.log(`Loaded ${companies.length} companies from CSV`);
+    console.log(`Companies with careers URLs: ${companiesWithCareersUrls.length}`);
+    
+    if (companiesWithCareersUrls.length === 0) {
+      console.log(`⚠️  No companies have careers URLs. Run scrapeAllCareersURLs() first.`);
+      return;
+    }
+    
+    const allJobs: JobListing[] = [];
+    let successful = 0;
+    let failed = 0;
+    
+    // Process each company with careers URL for job extraction
+    for (const company of companiesWithCareersUrls) {
+      try {
+        console.log(`\n=== Extracting jobs from ${company.name} ===`);
+        console.log(`Careers URL: ${company.careers_url}`);
+        
+        const page = this.stagehand.page;
+        
+        // Navigate directly to careers page (we already have the URL)
+        await page.goto(company.careers_url!);
+        
+        // Handle cookies using proven pattern
+        await this.handleCookies();
+        
+        // Extract jobs using existing logic
+        const extractedJobs = await this.extractJobs(company, company.careers_url!);
+        allJobs.push(...extractedJobs);
+        
+        console.log(`✅ Extracted ${extractedJobs.length} jobs from ${company.name}`);
+        successful++;
+        
+        // Rate limiting between companies
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+      } catch (error) {
+        console.error(`❌ Failed to extract jobs from ${company.name}:`, error);
+        failed++;
+      }
     }
     
     // Create metadata
@@ -646,7 +739,7 @@ export class SimpleScraper {
       runId: this.runId,
       runTimestamp: startTime,
       totalJobs: allJobs.length,
-      companiesProcessed: companies.length,
+      companiesProcessed: companiesWithCareersUrls.length,
       companiesSuccessful: successful,
       companiesFailed: failed
     };
@@ -654,9 +747,10 @@ export class SimpleScraper {
     // Write output
     await writeJobsJSON('public/jobs.json', allJobs, metadata);
     
-    console.log(`\n=== Scrape Complete ===`);
-    console.log(`Total jobs found: ${allJobs.length}`);
+    console.log(`\n=== Job Details Extraction Complete ===`);
+    console.log(`Total jobs extracted: ${allJobs.length}`);
     console.log(`Companies successful: ${successful}`);
     console.log(`Companies failed: ${failed}`);
+    console.log(`Output written to: public/jobs.json`);
   }
 } 

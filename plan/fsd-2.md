@@ -145,7 +145,7 @@ Addendum: Added support for extracting the language of the listing.
   - Add fallback retry with different navigation terms if first attempt fails
 
 ### 2.5.2 Multi-Level Career Page Navigation
-- [ ] **Handle nested career page structures**
+- [x] **Handle nested career page structures**
   - Some sites have careers overview page → separate job listings page
   - Detect when current page has links to actual job listings
   - Navigate one level deeper if needed to find actual job postings
@@ -172,24 +172,48 @@ Addendum: Added support for extracting the language of the listing.
 
 ## 📦 Work Package 2.6: Individual Job Detail Extraction
 
-### 2.6.1 Separate existing srapeAll() code into scrapeAllJobListingURLs() and scrapeAllJobDetails()
-...
+### 2.6.1 Separate existing scrapeAll() code into scrapeAllCareersURLs() (as worked on in 2.3 and 2.5) and scrapeAllJobDetails()
+- [x] **Create `scrapeAllCareersURLs(csvPath: string)` method**
+  - Read companies from CSV file
+  - For each company: run **careers page discovery logic** from `navigateToJobListings()`
+  - Use all the career page detection work from WP 2.3 and 2.5 (href extraction, validation, confidence scoring)
+  - **Write discovered careers URLs back to CSV** in the `careers_url` column
+  - **Stop after URL discovery** - no job extraction in this phase
+  - Update CSV with newly discovered careers URLs for future runs
+  - Focus purely on populating the careers_url column across all companies
 
-### 2.6.1 Job Detail Page Navigation
+- [ ] **Create `scrapeAllJobDetails(csvPath: string)` method**
+  - Read companies from CSV file (now with careers URLs populated from phase 1)
+  - For each company with a careers_url: navigate directly to that careers page
+  - Run **job extraction logic** from `extractJobs()` method
+  - Extract job listings, handle pagination, process job data
+  - Rate limiting between companies during job extraction
+  - Output final `jobs.json` with detailed job data
+  - This phase can run independently after careers URL discovery is complete
+
+- [ ] **Benefits of separation**:
+  - **Fast careers page discovery** across all companies without job extraction overhead
+  - **Validate careers URL quality** and coverage before committing to job extraction
+  - **Resume job extraction** independently if it fails partway through
+  - **CSV becomes complete** with all careers URLs discovered and validated
+  - **Different rate limiting** for URL discovery vs job extraction phases
+  - **Leverages all WP 2.5 improvements** in career page detection accuracy
+
+### 2.6.2 Job Detail Page Navigation
 - [ ] **Implement job detail page navigation**
   - After finding careers page, identify individual job listing links
   - Click into individual job postings to get complete information
   - Extract full job descriptions, location, language of listing from detail pages
   - Handle "Apply" buttons and external application systems
 
-### 2.6.2 Content Validation & Filtering
+### 2.6.3 Content Validation & Filtering
 - [ ] **Add scraped content validation**
   - Detect and filter out "null" strings and empty descriptions
   - Validate job titles are specific (not generic like "Jobs" or "Open Positions")
   - Ensure descriptions contain meaningful content (minimum length, keywords)
   - Filter out navigation elements, headers, footers from job content
 
-### 2.6.3 URL and Data Cleaning
+### 2.6.4 URL and Data Cleaning
 - [ ] **Improve URL extraction and validation**
   - Convert relative URLs to absolute URLs using base domain
   - Detect button text vs actual URLs ("MEHR ERFAHREN" → actual job URL)

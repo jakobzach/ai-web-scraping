@@ -33,8 +33,8 @@ async function testCareerPageDetection() {
   await writeCompaniesCSV(testCsvPath, testCompanies);
   console.log(`📄 Created test CSV: ${testCsvPath}\n`);
   
-  // Use production scraper in test mode
-  const scraper = new SimpleScraper('career-detection-only');
+  // Use production scraper for careers URL discovery only
+  const scraper = new SimpleScraper();
   
   // Initialize the scraper
   await scraper.init();
@@ -45,8 +45,8 @@ async function testCareerPageDetection() {
   let functionalMatches = 0;
   let failures = 0;
 
-  // Process companies using production scraper in test mode
-  await scraper.scrapeAll(testCsvPath);
+  // Process companies using production scraper in careers URL discovery mode
+  await scraper.scrapeAllCareersURLs(testCsvPath);
   
   // Read the updated CSV to get discovered URLs
   const updatedCompanies = await readCompaniesFromCSV(testCsvPath);
