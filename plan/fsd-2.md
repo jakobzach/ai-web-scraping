@@ -241,23 +241,68 @@ Addendum: Added support for extracting the language of the listing.
 
 ---
 
-## 📦 Work Package 2.7: Data Quality & Standardization
+## 📦 Work Package 2.7: Scalability & Reliability Improvements
 
-### 2.7.1 Enhanced AI Extraction Prompts
+### 2.7.1 Progressive CSV Saving
+- [x] **Implement immediate CSV updates after each company**
+  - Save CSV file after each successful careers URL discovery (not just at the end)
+  - Update individual company records in CSV immediately upon discovery
+  - Prevent data loss if process is interrupted mid-run
+  - Add progress tracking to show companies processed vs remaining
+
+- [x] **Resume capability for interrupted runs**
+  - Skip companies that already have careers URLs when restarting
+  - Add command line flag to force re-processing of existing URLs
+
+### 2.7.2 Parallel Processing Architecture
+- [ ] **Multi-worker runs**
+  - Implement worker pool to process multiple companies simultaneously
+  - Configure optimal number of workers (3-5 instances) to avoid rate limiting
+  - Divide company list into chunks for parallel processing
+  - Coordinate CSV writes to prevent conflicts between workers
+
+- [ ] **Worker coordination and safety**
+  - Implement file locking mechanism for CSV updates
+  - Add worker ID tracking to prevent duplicate processing
+  - Handle browser instance management per worker
+  - Implement graceful shutdown of all workers
+
+### 2.7.3 Batch Processing Options
+- [x] **Configurable batch sizes**
+  - Process companies in configurable batches (e.g., 50, 100, 200 companies)
+  - Save CSV after each batch completion
+  - Add batch progress reporting and statistics
+  - Support resuming from specific batch number
+
+- [ ] **Memory optimization for large datasets**
+  - Stream processing for very large CSV files (>10k companies)
+  - Periodic memory cleanup between batches
+  - Efficient data structures for large company lists
+  - Monitor and log memory usage during processing
+
+**Estimated Time**: 3-4 hours  
+**Dependencies**: Work Package 2.6  
+**Deliverable**: Scalable, fault-tolerant careers URL discovery system
+
+---
+
+## 📦 Work Package 2.8: Data Quality & Standardization
+
+### 2.8.1 Enhanced AI Extraction Prompts
 - [ ] **Improve schema descriptions and AI prompts**
   - More specific Zod schema descriptions for better AI guidance
   - Add examples of good vs bad data in schema descriptions
   - Improve language detection prompts with context clues
   - Better job type classification with employment indicators
 
-### 2.7.2 Deduplication Logic
+### 2.8.2 Deduplication Logic
 - [ ] **Implement job deduplication**
   - Detect duplicate jobs by title + company combination
   - Handle pagination duplicates (same job appearing multiple times)
   - Use fuzzy matching for similar job titles
   - Keep most complete version when duplicates found
 
-### 2.7.3 Data Standardization
+### 2.8.3 Data Standardization
 - [ ] **Standardize extracted data formats**
   - Consistent location formatting (City, Country vs City, State, Country)
   - Standardize language codes (en, de, etc.)
@@ -265,7 +310,7 @@ Addendum: Added support for extracting the language of the listing.
   - Clean and format job descriptions (remove extra whitespace, HTML artifacts)
 
 **Estimated Time**: 3-4 hours  
-**Dependencies**: Work Package 2.6  
+**Dependencies**: Work Package 2.7  
 **Deliverable**: Consistent, deduplicated, well-formatted job data
 
 ---
@@ -339,7 +384,7 @@ Addendum: Added support for extracting the language of the listing.
 - [ ] Confirm deduplication logic works across companies
 
 **Estimated Time**: 3-4 hours  
-**Dependencies**: Work Package 2.6, Work Package 3  
+**Dependencies**: Work Package 2.8, Work Package 3  
 **Deliverable**: Production-ready scraper with validated high-quality data
 
 ---
@@ -371,13 +416,14 @@ Addendum: Added support for extracting the language of the listing.
 | WP2: Core Scraper | 3-4 hours | High | Working implementation |
 | **WP2.5: Career Page Detection** | **3-4 hours** | **High** | **Accurate career page discovery** |
 | **WP2.6: Job Detail Extraction** | **4-5 hours** | **High** | **Individual job page navigation** |
-| **WP2.7: Data Quality & Standardization** | **3-4 hours** | **High** | **Deduplication & validation** |
+| **WP2.7: Scalability & Reliability** | **3-4 hours** | **High** | **Progressive saving & parallel processing** |
+| **WP2.8: Data Quality & Standardization** | **3-4 hours** | **High** | **Deduplication & validation** |
 | WP3: Static Output & Scheduling | 3-4 hours | High | Production capability |
 | WP4: Testing & Quality Validation | 3-4 hours | High | Quality metrics validation |
 | WP5: Migration | 1-2 hours | Medium | Cleanup |
 
-**Total Estimated Time**: 21-29 hours (includes comprehensive quality improvements)  
-**Key Advantage**: High-quality data extraction with accurate career page detection
+**Total Estimated Time**: 24-33 hours (includes comprehensive quality improvements & scalability)  
+**Key Advantage**: High-quality data extraction with scalable, fault-tolerant processing
 
 ---
 

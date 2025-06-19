@@ -7,6 +7,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { CompanyInput, JobListing, JobsOutput, ScrapingMetadata, JobType, LanguageOfListing } from './types.js';
 
 /**
+ * Normalize website URL for deduplication and matching
+ */
+export function normalizeWebsiteUrl(url: string): string {
+  return url.toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/$/, '')
+    .trim();
+}
+
+/**
  * Read companies from CSV file - simple version
  * Expected columns: Name, Website, Careers-URL (optional)
  */
@@ -17,6 +28,7 @@ export async function readCompaniesFromCSV(filePath: string): Promise<CompanyInp
 
   return new Promise((resolve, reject) => {
     const companies: CompanyInput[] = [];
+    const seenWebsites = new Set<string>();
     
     fs.createReadStream(filePath)
       .pipe(csv({
@@ -30,6 +42,15 @@ export async function readCompaniesFromCSV(filePath: string): Promise<CompanyInp
       }))
       .on('data', (row: any) => {
         if (row.name && row.website) {
+          const normalizedWebsite = normalizeWebsiteUrl(row.website.trim());
+          
+          // Skip duplicates based on normalized website URL
+          if (seenWebsites.has(normalizedWebsite)) {
+            console.log(`⚠️  Skipping duplicate website: ${row.website} (company: ${row.name})`);
+            return;
+          }
+          
+          seenWebsites.add(normalizedWebsite);
           companies.push({
             name: row.name.trim(),
             website: row.website.trim(),
@@ -37,18 +58,48 @@ export async function readCompaniesFromCSV(filePath: string): Promise<CompanyInp
           });
         }
       })
-      .on('end', () => resolve(companies))
+      .on('end', () => {
+        console.log(`📊 Loaded ${companies.length} unique companies from CSV (deduplication applied)`);
+        resolve(companies);
+      })
       .on('error', reject);
   });
 }
 
 /**
  * Write companies back to CSV with discovered careers URLs
+ * Can update specific companies by website URL or write entire array
  */
-export async function writeCompaniesCSV(filePath: string, companies: CompanyInput[]): Promise<void> {
+export async function writeCompaniesCSV(filePath: string, companies: CompanyInput[], updateCompany?: {
+  website: string;
+  careers_url: string;
+}): Promise<void> {
+  let finalCompanies = companies;
+  
+  // If we have an update for a specific company, apply it
+  if (updateCompany) {
+    const normalizedUpdateWebsite = normalizeWebsiteUrl(updateCompany.website);
+    const companyIndex = companies.findIndex(c => 
+      normalizeWebsiteUrl(c.website) === normalizedUpdateWebsite
+    );
+    
+    if (companyIndex !== -1) {
+      // Create a copy and update the specific company
+      finalCompanies = [...companies];
+      const existingCompany = finalCompanies[companyIndex]!;
+      finalCompanies[companyIndex] = {
+        name: existingCompany.name,
+        website: existingCompany.website,
+        careers_url: updateCompany.careers_url
+      };
+    } else {
+      console.log(`⚠️  Company with website ${updateCompany.website} not found for update`);
+    }
+  }
+  
   const csvContent = [
     'Name,Website,CareersPage',
-    ...companies.map(c => `"${c.name}","${c.website}","${c.careers_url || ''}"`)
+    ...finalCompanies.map(c => `"${c.name}","${c.website}","${c.careers_url || ''}"`)
   ].join('\n');
   
   await fs.writeFile(filePath, csvContent, 'utf8');

@@ -5,7 +5,7 @@ import { Stagehand } from "@browserbasehq/stagehand";
 import StagehandConfig from '../stagehand.config.js';
 import { CompanyInput, JobListing, JobExtractionSchema, ScrapingMetadata, JobType, LanguageOfListing } from './types.js';
 import { z } from 'zod';
-import { readCompaniesFromCSV, writeCompaniesCSV, writeJobsJSON, generateJobId, cleanJobData, isValidUrl, ensureUrlProtocol } from './utils.js';
+import { readCompaniesFromCSV, writeCompaniesCSV, writeJobsJSON, generateJobId, cleanJobData, isValidUrl, ensureUrlProtocol, normalizeWebsiteUrl } from './utils.js';
 
 export class SimpleScraper {
   private stagehand: Stagehand;
@@ -30,39 +30,33 @@ export class SimpleScraper {
 
   /**
    * Reset browser state between companies to prevent navigation interference
+   * Simplified approach to avoid execution context errors
    */
   private async resetBrowserState(): Promise<void> {
     try {
       console.log("🔄 Resetting browser state...");
-      const page = this.stagehand.page;
       
-      // Clear all browsing data
-      const client = await page.context().newCDPSession(page);
-      await client.send('Storage.clearDataForOrigin', {
-        origin: '*',
-        storageTypes: 'all'
-      });
-      
-      // Clear cookies, cache, and local storage
-      await page.context().clearCookies();
-      await page.evaluate(() => {
-        // Clear local storage and session storage
-        if (typeof localStorage !== 'undefined') {
-          localStorage.clear();
-        }
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.clear();
-        }
-      });
-      
-      // Navigate to blank page to reset state
-      await page.goto('about:blank');
-      await page.waitForTimeout(1000);
+      // Timeout wrapper to prevent hanging
+      await Promise.race([
+        this.performBrowserReset(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Browser reset timeout')), 5000)
+        )
+      ]);
       
       console.log("✅ Browser state reset complete");
     } catch (error) {
       console.log("⚠️ Browser reset failed, continuing anyway:", error);
+      // Don't let reset errors block execution - just continue
     }
+  }
+
+  private async performBrowserReset(): Promise<void> {
+    const page = this.stagehand.page;
+    
+    // Simple approach: just navigate to blank page and clear cookies
+    await page.goto('about:blank');
+    await page.context().clearCookies();
   }
 
   /**
@@ -653,11 +647,15 @@ export class SimpleScraper {
   /**
    * Process all companies from CSV
    */
-  async runFullPipeline(csvPath: string): Promise<void> {
+  async runFullPipeline(csvPath: string, options?: {
+    forceReprocess?: boolean;
+    batchSize?: number;
+    startFromIndex?: number;
+  }): Promise<void> {
     console.log(`Starting full scrape pipeline...`);
     
     // Phase 1: Discover careers URLs
-    await this.scrapeAllCareersURLs(csvPath);
+    await this.scrapeAllCareersURLs(csvPath, options);
     
     // Phase 2: Extract job details
     await this.scrapeAllJobDetails(csvPath);
@@ -666,81 +664,163 @@ export class SimpleScraper {
   /**
    * Discover careers page URLs for all companies and write back to CSV
    * This method focuses purely on careers page discovery without job extraction
+   * Features: Progressive saving, resume capability, skip existing URLs
    */
-  async scrapeAllCareersURLs(csvPath: string): Promise<void> {
+  async scrapeAllCareersURLs(csvPath: string, options: {
+    forceReprocess?: boolean;
+    batchSize?: number;
+    startFromIndex?: number;
+  } = {}): Promise<void> {
+    const { forceReprocess = false, batchSize = 1, startFromIndex = 0 } = options;
+    
     const startTime = new Date().toISOString();
     console.log(`\n=== Careers URL Discovery ===`);
     console.log(`Starting careers URL discovery run ${this.runId} at ${startTime}`);
+    console.log(`Options: forceReprocess=${forceReprocess}, batchSize=${batchSize}, startFromIndex=${startFromIndex}`);
     
     // Read companies from CSV
-    const companies = await readCompaniesFromCSV(csvPath);
-    console.log(`Loaded ${companies.length} companies from CSV`);
+    const allCompanies = await readCompaniesFromCSV(csvPath);
+    console.log(`Loaded ${allCompanies.length} companies from CSV`);
+    
+    // Apply start index to the full list first if specified
+    let companiesFromIndex = allCompanies;
+    if (startFromIndex > 0) {
+      companiesFromIndex = allCompanies.slice(startFromIndex);
+      console.log(`Starting from index ${startFromIndex}, ${companiesFromIndex.length} companies remaining`);
+    }
+    
+    // Filter companies based on options (from the subset after startFromIndex)
+    let companies = companiesFromIndex;
+    if (!forceReprocess) {
+      const companiesWithoutUrls = companiesFromIndex.filter(c => !c.careers_url);
+      const companiesWithUrls = companiesFromIndex.filter(c => c.careers_url);
+      console.log(`Found ${companiesWithUrls.length} companies with existing careers URLs (will skip)`);
+      console.log(`Found ${companiesWithoutUrls.length} companies needing careers URL discovery`);
+      companies = companiesWithoutUrls;
+    }
+    
+    if (companies.length === 0) {
+      console.log(`✅ All companies already have careers URLs. Use forceReprocess=true to reprocess.`);
+      return;
+    }
     
     let successful = 0;
     let failed = 0;
-    let newCareersUrlsDiscovered = 0;
+    let skipped = 0;
+    let processed = 0;
+    let totalNewUrls = 0;
     
-    // Process each company
-    for (const company of companies) {
-      try {
-        console.log(`\n=== Discovering careers URL for ${company.name} ===`);
-        console.log(`Website: ${company.website}`);
-        
-        const originalCareersUrl = company.careers_url;
-        
-        // Skip if we already have a careers URL
-        if (originalCareersUrl) {
-          console.log(`✅ Already have careers URL: ${originalCareersUrl}`);
-          successful++;
-          continue;
-        }
-        
-        // Navigate to company website
-        const page = this.stagehand.page;
-        await page.goto(ensureUrlProtocol(company.website));
-        
-        // Handle cookies using proven pattern
-        await this.handleCookies();
-
-        // Navigate to careers page (smart handling) - this is the core logic from WP 2.5
-        const careersResult = await this.navigateToJobListings(company);
-        
-        if (careersResult.url && careersResult.discovered) {
-          console.log(`✅ Discovered careers URL: ${careersResult.url} (confidence: ${careersResult.confidence})`);
-          console.log(`Validation notes: ${careersResult.validationNotes.join(', ')}`);
+    // Process companies in batches
+    for (let i = 0; i < companies.length; i += batchSize) {
+      const batch = companies.slice(i, i + batchSize);
+      let batchNewUrls = 0;
+      
+      console.log(`\n📦 Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(companies.length / batchSize)} (${batch.length} companies)`);
+      
+      // Process each company in the batch
+      for (const company of batch) {
+        try {
+          processed++;
+          console.log(`\n=== [${processed}/${companies.length}] Discovering careers URL for ${company.name} ===`);
+          console.log(`Website: ${company.website}`);
           
-          // Update the company object with discovered URL
-          company.careers_url = careersResult.url;
-          newCareersUrlsDiscovered++;
-          successful++;
-        } else {
-          console.log(`❌ Could not discover careers URL. Notes: ${careersResult.validationNotes.join(', ')}`);
+          // Skip if we already have a careers URL (in case CSV was updated between runs)
+          if (company.careers_url && !forceReprocess) {
+            console.log(`✅ Already have careers URL: ${company.careers_url} (skipping)`);
+            successful++;
+            skipped++;
+            continue;
+          }
+          
+          // Navigate to company website with retry logic
+          const page = this.stagehand.page;
+          let navigationSuccess = false;
+          let retryCount = 0;
+          const maxRetries = 2;
+          
+          while (!navigationSuccess && retryCount < maxRetries) {
+            try {
+              await page.goto(ensureUrlProtocol(company.website));
+              navigationSuccess = true;
+            } catch (navError) {
+              retryCount++;
+              console.log(`Navigation attempt ${retryCount} failed for ${company.name}: ${navError}`);
+              
+              if (retryCount < maxRetries) {
+                console.log(`Retrying navigation after browser reset...`);
+                await this.resetBrowserState();
+                await new Promise(resolve => setTimeout(resolve, 2000));
+              } else {
+                throw new Error(`Failed to navigate after ${maxRetries} attempts: ${navError}`);
+              }
+            }
+          }
+          
+          // Handle cookies using proven pattern
+          await this.handleCookies();
+
+          // Navigate to careers page (smart handling) - this is the core logic from WP 2.5
+          const careersResult = await this.navigateToJobListings(company);
+          
+          if (careersResult.url && careersResult.discovered) {
+            console.log(`✅ Discovered careers URL: ${careersResult.url} (confidence: ${careersResult.confidence})`);
+            console.log(`Validation notes: ${careersResult.validationNotes.join(', ')}`);
+            
+                      // Progressive saving: Update CSV immediately after each discovery using website-based matching
+          console.log(`💾 Saving progress to CSV...`);
+          await writeCompaniesCSV(csvPath, allCompanies, {
+            website: company.website,
+            careers_url: careersResult.url
+          });
+          
+          // Update the in-memory company object for tracking
+          const originalCompany = allCompanies.find(c => 
+            normalizeWebsiteUrl(c.website) === normalizeWebsiteUrl(company.website)
+          );
+          if (originalCompany) {
+            originalCompany.careers_url = careersResult.url;
+            batchNewUrls++;
+            totalNewUrls++;
+          }
+            
+            successful++;
+          } else {
+            console.log(`❌ Could not discover careers URL. Notes: ${careersResult.validationNotes.join(', ')}`);
+            failed++;
+          }
+          
+          // Rate limiting between companies
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+        } catch (error) {
+          console.error(`❌ Failed to discover careers URL for ${company.name}:`, error);
           failed++;
         }
         
-        // Rate limiting between companies
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Reset browser state between companies to prevent navigation interference
+        await this.resetBrowserState();
         
-      } catch (error) {
-        console.error(`❌ Failed to discover careers URL for ${company.name}:`, error);
-        failed++;
+        // Progress update every 10 companies
+        if (processed % 10 === 0) {
+          const progressPercent = ((processed / companies.length) * 100).toFixed(1);
+          console.log(`\n📊 Progress: ${processed}/${companies.length} (${progressPercent}%) | Success: ${successful} | Failed: ${failed} | New URLs: ${totalNewUrls}`);
+        }
       }
       
-      // Reset browser state between companies to prevent navigation interference
-      await this.resetBrowserState();
-    }
-    
-    // Write updated companies back to CSV with new careers URLs
-    if (newCareersUrlsDiscovered > 0) {
-      console.log(`\n💾 Writing updated CSV with ${newCareersUrlsDiscovered} new careers URLs...`);
-      await writeCompaniesCSV(csvPath, companies);
+      // Batch completion summary
+      console.log(`\n✅ Batch ${Math.floor(i / batchSize) + 1} complete: ${batchNewUrls} new URLs discovered`);
     }
     
     console.log(`\n=== Careers URL Discovery Complete ===`);
-    console.log(`Companies processed: ${companies.length}`);
-    console.log(`Careers URLs discovered: ${newCareersUrlsDiscovered}`);
+    console.log(`Companies processed: ${processed}`);
     console.log(`Companies successful: ${successful}`);
     console.log(`Companies failed: ${failed}`);
+    console.log(`Companies skipped (existing URLs): ${skipped}`);
+    console.log(`New careers URLs discovered: ${totalNewUrls}`);
+    console.log(`Total companies with careers URLs now: ${allCompanies.filter(c => c.careers_url).length}/${allCompanies.length}`);
+    
+    const successRate = processed > 0 ? ((successful / processed) * 100).toFixed(1) : '0';
+    console.log(`Success rate: ${successRate}%`);
   }
 
   /**
