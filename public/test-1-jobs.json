@@ -1,0 +1,603 @@
+{
+  "metadata": {
+    "runId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+    "runTimestamp": "2025-06-16T10:42:44.734Z",
+    "totalJobs": 58,
+    "companiesProcessed": 13,
+    "companiesSuccessful": 13,
+    "companiesFailed": 0
+  },
+  "jobs": [
+    {
+      "id": "d2d221f1-50eb-42bc-853b-d8086009d2c8",
+      "company": "Aachener Maschinenbau GmbH",
+      "title": "Jobs",
+      "scrapeTimestamp": "2025-06-16T10:43:32.069Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "location": "Aachen, Germany",
+      "url": "/jobs",
+      "languageOfListing": "en"
+    },
+    {
+      "id": "b52bfdb5-8c62-4535-a247-07728b341125",
+      "company": "Aconity3D GmbH",
+      "title": "Managing Director AconityUS",
+      "scrapeTimestamp": "2025-06-16T10:44:12.639Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "We are looking for a dedicated Managing Director for our US location.",
+      "url": "https://aconity3d.com/jobs/"
+    },
+    {
+      "id": "52deaee0-4bcc-4c33-905b-06e0319b7382",
+      "company": "Aconity3D GmbH",
+      "title": "System Administrator",
+      "scrapeTimestamp": "2025-06-16T10:44:12.639Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "We are looking for a dedicated SysAdmin for our company. Your main tasks will include the administration and maintenance of our IT infrastructure, ensuring IT security and the administration and creation of employee accounts.",
+      "url": "https://aconity3d.com/jobs/"
+    },
+    {
+      "id": "12592004-910d-4ed5-b358-3b1952804d3e",
+      "company": "Aconity3D GmbH",
+      "title": "Service Technician",
+      "scrapeTimestamp": "2025-06-16T10:44:12.639Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Do you appreciate implementing your own solution suggestions and taking on new challenges with a variety of tasks?",
+      "url": "https://aconity3d.com/jobs/"
+    },
+    {
+      "id": "caa1e38b-564f-489f-9105-6388b799ba70",
+      "company": "Aconity3D GmbH",
+      "title": "Technical Editor",
+      "scrapeTimestamp": "2025-06-16T10:44:12.639Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "You are passionate about simplifying complex technical facts?",
+      "url": "https://aconity3d.com/jobs/"
+    },
+    {
+      "id": "8368408e-d7d4-4fcf-84f9-30608b0e1090",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Verstärkung für unser HR-Team",
+      "scrapeTimestamp": "2025-06-16T10:44:40.283Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Iris Gauder verstärkt als neue Head of Global HR das ACSYS Führungsteam.",
+      "url": "https://acsyslaser.com//karriere/"
+    },
+    {
+      "id": "836c71a9-0c51-406a-8135-489027b40cca",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Max und die Vielseitigkeit",
+      "scrapeTimestamp": "2025-06-16T10:44:40.284Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Wenn man Max Ernstberger mit nur einem Wort beschreiben sollte, dann wäre es „vielseitig“. Er entwickelt und modelliert Laserprozesse für Anwendungen, hält Fachvorträge und bildet eine wichtige Schnittstelle zwischen Technik, Vertrieb, Marketing und Geschäftsleitung.",
+      "url": "https://acsyslaser.com//karriere/"
+    },
+    {
+      "id": "c7c7bf51-2bee-4fb9-9875-9b659f939824",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Offene Stellen für Schüler & Auszubildende",
+      "scrapeTimestamp": "2025-06-16T10:44:40.284Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Du möchtest einen spannenden und vielfältigen Beruf erlernen, der Dir gute Chancen auf dem Arbeitsmarkt sichert? Bei uns findest Du alles, um Deine Karriere zu starten und gemeinsam im #teamacsys zu wachsen. Dafür bieten wir Dir alles, was Du brauchst: Ein moderner Arbeitsplatz, Freiraum für Deine Ideen und flexible Arbeitszeiten sind nur einige Beispiele, wie wir Dich als Arbeitgeber unterstützen.",
+      "url": "https://acsyslaser.com//karriere/"
+    },
+    {
+      "id": "58c84b62-100f-47be-a850-08ee54e0f440",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Abschlussarbeit oder Praktikum Bereich Technik",
+      "scrapeTimestamp": "2025-06-16T10:45:02.885Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Als inhabergeführtes mittelständisches Technologieunternehmen sind wir einer der führenden Anbieter von hochwertigen Maschinen für die Lasermaterialbearbeitung. Ob Standard- oder...",
+      "location": "Mittweida, Leipziger Straße 37, Germany",
+      "type": "Internship",
+      "url": "/jobs/abschlussarbeit-oder-praktikum-bereich-technik",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "790d5e74-01d5-4f8b-998d-eca49c5450a2",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Ausbildung Industriekaufleute 2025 ( m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Was uns als High-Tech Unternehmen für Standard- und Spezialmaschinen im Bereich Lasertechnik auszeichnet, sind unsere Technologien, unser Know-how entlang der Wertschöpfungskette und die...",
+      "location": "Mittweida, Leipziger Straße 37, Germany",
+      "type": "Internship",
+      "url": "/jobs/ausbildung-industriekaufleute-2025-m-w-d",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "5edc4007-3431-45f6-a92d-a4e1b79a3299",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Ausbildung Industriekaufmann 2025 (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Industriekaufleute steuern betriebswirtschaftliche Abläufe in Unternehmen und unterstützen sämtliche Unternehmensprozesse aus betriebswirtschaftlicher Sicht. Deine betriebliche...",
+      "location": "Kornwestheim, Leibnizstraße 9, Germany",
+      "type": "Internship",
+      "url": "/jobs/ausbildung-industriekaufmann-2025-m-w-d",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "c380d2eb-611a-4a18-9ab7-98f592814d5a",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Ausbildung Industriekaufmann 2026 (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Industriekaufleute steuern betriebswirtschaftliche Abläufe in Unternehmen und unterstützen sämtliche Unternehmensprozesse aus betriebswirtschaftlicher Sicht. Deine betriebliche...",
+      "location": "Kornwestheim, Leibnizstraße 9, Germany",
+      "type": "Internship",
+      "url": "/jobs/ausbildung-industriekaufmann-2026-m-w-d",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "d7e4aebb-4e42-400c-8f83-4d4581e0aaaa",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Duales Studium - Digital Engineering",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Kombination aus Informationstechnik und Industrieller Technik Interdisziplinäre Studieninhalte aus den Bereichen Informatik, Kommunikationstechnik, Maschinenbau, Fertigungstechnik, Elektro- und...",
+      "location": "Mittweida, Leipziger Straße 37, Germany",
+      "type": "Internship",
+      "url": "/jobs/duales-studium-digital-engineering",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "dee29037-af34-45ae-b076-5a36fc4c16b8",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Duales Studium - Industrielle Produktion (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Die digital gesteuerte Produktion in Verbindung mit den Herausforderungen der „Industrie 4.0“ benötigt aktuell bestens ausgebildete Ingenieure.  In einem Studium der...",
+      "location": "Mittweida, Leipziger Straße 37, Germany",
+      "type": "Internship",
+      "url": "/jobs/duales-studium-industrielle-produktion-m-w-d",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "0e2fa2e7-68d6-4df9-97bd-8fcc599f39e9",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Initiativ",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Other",
+      "location": "Kornwestheim, Leibnizstraße 9, Germany",
+      "type": "Internship",
+      "url": "/jobs/initiativ",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "0f9becf2-8dea-49e1-9d81-8af7744d037d",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Schülerpraktikum (m/w/d) in Mittweida",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Wir bieten dir die Möglichkeit ein 1-2 - wöchiges Schülerpraktikum zur Berufsorientierung (freiwilliges Praktikum in den Schulferien oder Betriebspraktikum im Rahmen der...",
+      "location": "Mittweida, Leipziger Straße 37, Germany",
+      "type": "Internship",
+      "url": "/jobs/schuelerpraktikum-m-w-d-in-mittweida",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "d6f11ca5-e272-4dd2-b316-f00e3dc79de0",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Servicetechniker für Laserbearbeitungsanlagen (m/w/d) im Außendienst",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Inbetriebnahme, Wartung und Reparatur unserer Laserbearbeitungsanlagen Beratung und Einweisung der Kunden in Funktion und Anwendung der Maschinen Selbstständige Störungsanalyse und Behebung ...",
+      "location": "Kornwestheim, Leibnizstraße 9, Germany",
+      "type": "Full-time",
+      "url": "/jobs/servicetechniker-fuer-laserbearbeitungsanlagen-m-w-d-im-aussendienst",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "47f26647-650a-4ec0-bac0-1fadc778db01",
+      "company": "ACSYS Lasertechnik GmbH",
+      "title": "Softwareentwickler (m/w/d) für die Anwendungsentwicklung",
+      "scrapeTimestamp": "2025-06-16T10:45:02.886Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Sie entwerfen und entwickeln kreative Software- und Systemlösungen für unsere Laseranlagen Dabei begleiten Sie Ihre Projekte bis zur Inbetriebnahme Sie integrieren und testen Ihre Produkte...",
+      "location": "Mittweida, Leipziger Straße 37, Germany",
+      "type": "Full-time",
+      "url": "/jobs/softwareentwickler-m-w-d-fuer-die-anwendungsentwicklung",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "f38ef604-b917-461e-a0d9-607af903f626",
+      "company": "Active Fiber Systems GmbH",
+      "title": "Offene Stellen",
+      "scrapeTimestamp": "2025-06-16T10:45:27.616Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Informiert euch hier über aktuell offene Stellen. Wir freuen uns auf eure Bewerbungen!",
+      "url": "/offene-stellen",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "f82d4011-ce44-4a32-9e5e-b9f74fc53c6e",
+      "company": "Active Fiber Systems GmbH",
+      "title": "Offene Stellen",
+      "scrapeTimestamp": "2025-06-16T10:45:36.685Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Informiert euch hier über aktuell offene Stellen. Wir freuen uns auf eure Bewerbungen!",
+      "url": "/offene-stellen",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "d2c4335e-d0f3-4c6e-9bca-ce07075a7912",
+      "company": "Adelbert Haas LLC",
+      "title": "CRM-Anwendungsbetreuer und Projektleiter",
+      "scrapeTimestamp": "2025-06-16T10:46:03.306Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "a0139141-bf76-49a0-8b83-e4c024191c30",
+      "company": "Adelbert Haas LLC",
+      "title": "Industriemechaniker | Mechatroniker",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "995bf82c-7d6d-4db6-b0f8-cecf34b47fc9",
+      "company": "Adelbert Haas LLC",
+      "title": "ERP-Anwendungsbetreuer und Projektleiter",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "cd10c313-0c57-4d60-9a76-eb31f9fbf24c",
+      "company": "Adelbert Haas LLC",
+      "title": "Junior Sachbearbeiter Service und Aftersales",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "03ce8289-572b-417e-82b3-ea61c58399dd",
+      "company": "Adelbert Haas LLC",
+      "title": "Anwendungstechniker",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "2cc711f5-768e-400d-bd7c-225530aee78d",
+      "company": "Adelbert Haas LLC",
+      "title": "Applikationsingenieur",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "ee93864f-5fda-4c52-b553-8afd5a0d3046",
+      "company": "Adelbert Haas LLC",
+      "title": "Elektroniker",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "5a2a88ac-9118-432d-9f4a-341482e7d937",
+      "company": "Adelbert Haas LLC",
+      "title": "Entwicklungsingenieur CNC-Steuerungstechnik",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Trossingen, Deutschland",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "817d886d-7965-43fc-a4e1-ec5af8d64b6d",
+      "company": "Adelbert Haas LLC",
+      "title": "Applications Engineer",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Charlotte, NC, USA",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "d73c4933-daf8-404f-9d14-69e65d42c96e",
+      "company": "Adelbert Haas LLC",
+      "title": "Servicetechniker D-Nordwest, BEL, LUX",
+      "scrapeTimestamp": "2025-06-16T10:46:03.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "location": "Außendienst, div., Deutschland, Belgien, Luxemburg",
+      "type": "Full-time",
+      "url": "https://multigrind.com/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "b5372f37-2bd0-4727-80b1-81c2cdee6f8c",
+      "company": "ADVANTEC Unternehmensgruppe",
+      "title": "Vertriebs­außendienst (m/w/d) für Hydraulikzylinder und Hydraulik­komponenten",
+      "scrapeTimestamp": "2025-06-16T10:46:38.450Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Die ADVANTEC Hydraulik GmbH ist ein weltweit führender Anbieter von Hydraulik­zylindern und hydraulischen...",
+      "url": "https://advantec.company/de/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "05e3c568-281b-4e0b-90c2-73e341ca160c",
+      "company": "ADVANTEC Unternehmensgruppe",
+      "title": "Industrie­mechaniker (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:46:38.451Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Die ADVANTEC Unternehmens­gruppe ist ein weltweit führender Hersteller von Teilschnitt­maschinen...",
+      "url": "https://advantec.company/de/karriere",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "0ffb9bae-09bf-4987-9e2a-a0e6262db34e",
+      "company": "ADVANTEC Unternehmensgruppe",
+      "title": "Vertriebs­außendienst (m/w/d) für Hydraulikzylinder und Hydraulik­komponenten",
+      "scrapeTimestamp": "2025-06-16T10:46:48.765Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Die ADVANTEC Hydraulik GmbH ist ein weltweit führender Anbieter von Hydraulik­zylindern und hydraulischen... [mehr]",
+      "url": "https://advantec.company/de/karriere"
+    },
+    {
+      "id": "8acfc351-1c35-4cea-a7c7-79fe8b9d7744",
+      "company": "ADVANTEC Unternehmensgruppe",
+      "title": "Industrie­mechaniker (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:46:48.765Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Die ADVANTEC Unternehmens­gruppe ist ein weltweit führender Hersteller von Teilschnitt­maschinen... [mehr]",
+      "url": "https://advantec.company/de/karriere"
+    },
+    {
+      "id": "1cbe11a0-65fc-4fd1-850c-c34f3c636eca",
+      "company": "AEL Apparatebau GmbH Leisnig",
+      "title": "Stellenangebote",
+      "scrapeTimestamp": "2025-06-16T10:47:12.450Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Abwechslungsreiche Projekte schaffen wir mit Unterstützung schlauer Köpfe und geschickter Hände. Erfahren Sie hier, welche Positionen zur Unterstützung unserer Teams in den beiden Standorten aktuell zu besetzen sind.",
+      "url": "https://www.ael.de/karriere/",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "ea7e2c56-c33f-425c-9510-f258dd9dc5a6",
+      "company": "AERO-LIFT Vakuumtechnik GmbH",
+      "title": "25-JÄHRIGES JUBILÄUM BEI AERO-LIFT",
+      "scrapeTimestamp": "2025-06-16T10:47:47.265Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Ein Vierteljahrhundert voller Engagement, Innovation und Teamgeist: Michael Abt, Bereichsleiter Elektrotechnik und…",
+      "url": "https://www.aero-lift.de/"
+    },
+    {
+      "id": "317f55a7-811c-4390-8655-94e6319dfd85",
+      "company": "AERO-LIFT Vakuumtechnik GmbH",
+      "title": "AERO-CUSTOMISED LÖSUNG UNTERSTÜTZT ELEKTROLOK-BAU",
+      "scrapeTimestamp": "2025-06-16T10:47:47.265Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Auch im Welt DOKU Videobericht zum Bau der modernen Elektrolokomotive Vectron spielt ein AERO-CUSTOMISED Gerät eine…",
+      "url": "https://www.aero-lift.de/"
+    },
+    {
+      "id": "4d5cdea9-ff41-4a42-bbcb-2445d5281fff",
+      "company": "AERO-LIFT Vakuumtechnik GmbH",
+      "title": "AERO-BASIC IM EINSATZ",
+      "scrapeTimestamp": "2025-06-16T10:47:47.265Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Im Videobericht von Welt Doku spielt unser AERO-BASIC eine wichtige Rolle bei der Herstellung des Schwerlasttransporters…",
+      "url": "https://www.aero-lift.de/"
+    },
+    {
+      "id": "abee6f00-7752-4262-b5db-24983a05f41d",
+      "company": "AERO-LIFT Vakuumtechnik GmbH",
+      "title": "WILLKOMMEN IM TEAM!",
+      "scrapeTimestamp": "2025-06-16T10:47:47.265Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Diesen Herbst konnten wir alle DH-Studierenden nach ihrem Studium in unser Unternehmen aufnehmen.",
+      "url": "https://www.aero-lift.de/"
+    },
+    {
+      "id": "00d49284-a85c-4398-a173-3ea97625499b",
+      "company": "AERO-LIFT Vakuumtechnik GmbH",
+      "title": "VERTRETERTAGUNG 2024",
+      "scrapeTimestamp": "2025-06-16T10:47:47.265Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Auch in diesem Jahr durften wir unsere Vertreter in der AERO Akademie begrüßen.",
+      "url": "https://www.aero-lift.de/"
+    },
+    {
+      "id": "ce5210b1-1a91-419c-a170-de9797c9226f",
+      "company": "AERO-LIFT Vakuumtechnik GmbH",
+      "title": "TEAM AERO-LIFT AKTIV BEIM FIRMENLAUF",
+      "scrapeTimestamp": "2025-06-16T10:47:47.265Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Unser Team nahm auch in diesem Jahr wieder erfolgreich am Firmenlauf in Balingen teil.",
+      "url": "https://www.aero-lift.de/"
+    },
+    {
+      "id": "b22b07d6-d594-4358-b211-57cd31f4968d",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Arbeiten bei AFOTEK",
+      "scrapeTimestamp": "2025-06-16T10:48:57.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "f977b3d7-0d05-4c8b-bdd3-0749fcafa1ca",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Freie Stellen",
+      "scrapeTimestamp": "2025-06-16T10:48:57.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "b1a5d78d-a0af-4d24-93bb-22f7a5e57b5b",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Jetzt Bewerben",
+      "scrapeTimestamp": "2025-06-16T10:48:57.307Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "3e9aff14-5acc-4724-aa70-9945166a02fe",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Vertriebsingenieur für Lackieranlagen (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:49:10.133Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "ca8e522a-25eb-43db-a78c-c6bda571525e",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Techniker für unser Team „After-Sales und Service“ (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:49:10.134Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "2639700e-5663-4a5d-b88f-4032251e1eaf",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Automatisierungsingenieur/-techniker (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:49:10.134Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "652129ae-2498-494e-9e3c-b1acb1a82fab",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Servicetechniker im Außendienst (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:49:10.134Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "bd43bc9c-c572-4864-b704-9fbd7fa5ffe7",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Bauleiter für Lackieranlagen (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:49:10.134Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "90461778-aa8a-42cc-9e2c-49b19c3d796d",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Ausbildung zum Industriemechaniker Fachrichtung Maschinen- und Anlagenbau (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:49:10.134Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "dab9d806-240d-4f5b-945f-02f65b66331c",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Ausbildung zum Technischen Produktdesigner Fachrichtung Maschinen- und Anlagenkonstruktion (m/w/d)",
+      "scrapeTimestamp": "2025-06-16T10:49:10.134Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "768eec38-0338-4189-ad56-5008e871e70f",
+      "company": "AFOTEK Anlagen für Oberflächentechnik GmbH",
+      "title": "Initiativbewerbung",
+      "scrapeTimestamp": "2025-06-16T10:49:10.134Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "null",
+      "url": "https://afotek.de/"
+    },
+    {
+      "id": "6183877b-cc21-4b8e-8359-72ceb4e748ab",
+      "company": "AGTOS GmbH",
+      "title": "STELLENANGEBOTE",
+      "scrapeTimestamp": "2025-06-16T10:49:33.967Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Machen Sie Karriere bei uns und bewerben Sie sich auf eine der Stellenanzeigen aus unserer Ausschreibung. Alternativ können Sie auch eine Initiativbewerbung bei uns einreichen.",
+      "url": "https://www.agtos.de/karriere/",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "4b3ea217-e56c-423c-a9c8-18ddb6079635",
+      "company": "AGTOS GmbH",
+      "title": "AUSBILDUNG",
+      "scrapeTimestamp": "2025-06-16T10:49:33.968Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Starten Sie Ihre Berufskarriere mit einer Ausbildung in unserem Unternehmen! Sie lernen in einer modernen, nachhaltigen Firma und haben die Chance auf eine Übernahme nach Ausbildungsende.",
+      "url": "https://www.agtos.de/karriere/",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "901da5a4-dfe7-4475-ae48-4c6e3fa80d85",
+      "company": "AGTOS GmbH",
+      "title": "PRAKTIKUM",
+      "scrapeTimestamp": "2025-06-16T10:49:33.968Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Ihr Schul- oder Studienpraktikum können Sie bei AGTOS absolvieren. Gerne bereiten wir Sie auf Ihre Karriere vor und integrieren Sie im Team.",
+      "url": "https://www.agtos.de/karriere/",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "542599b1-3159-49fd-bb34-62a0547c94c7",
+      "company": "AGTOS GmbH",
+      "title": "STELLENANGEBOTE",
+      "scrapeTimestamp": "2025-06-16T10:49:44.590Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Machen Sie Karriere bei uns und bewerben Sie sich auf eine der Stellenanzeigen aus unserer Ausschreibung. Alternativ können Sie auch eine Initiativbewerbung bei uns einreichen.",
+      "url": "https://www.agtos.de/karriere/",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "fc7636d3-cb63-4fa6-b58d-7bdaab71b36f",
+      "company": "AGTOS GmbH",
+      "title": "AUSBILDUNG",
+      "scrapeTimestamp": "2025-06-16T10:49:44.590Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Starten Sie Ihre Berufskarriere mit einer Ausbildung in unserem Unternehmen! Sie lernen in einer modernen, nachhaltigen Firma und haben die Chance auf eine Übernahme nach Ausbildungsende.",
+      "url": "https://www.agtos.de/karriere/",
+      "languageOfListing": "de"
+    },
+    {
+      "id": "5aa6e93c-08ca-40de-904b-2f5498f8f281",
+      "company": "AGTOS GmbH",
+      "title": "PRAKTIKUM",
+      "scrapeTimestamp": "2025-06-16T10:49:44.590Z",
+      "scrapeRunId": "b1984b08-c45c-4f36-91c7-bf3eb6ec50de",
+      "description": "Ihr Schul- oder Studienpraktikum können Sie bei AGTOS absolvieren. Gerne bereiten wir Sie auf Ihre Karriere vor und integrieren Sie im Team.",
+      "url": "https://www.agtos.de/karriere/",
+      "languageOfListing": "de"
+    }
+  ]
+}
